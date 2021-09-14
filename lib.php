@@ -25,28 +25,6 @@
 
 defined('MOODLE_INTERNAL') || die;
 
-require_once($CFG->dirroot . '/mod/teams/vendor/microsoft/microsoft-graph/src/Graph.php');
-require_once($CFG->dirroot . '/mod/teams/vendor/microsoft/microsoft-graph/src/Core/GraphConstants.php');
-require_once($CFG->dirroot . '/mod/teams/vendor/microsoft/microsoft-graph/src/Http/GraphRequest.php');
-require_once($CFG->dirroot . '/mod/teams/vendor/microsoft/microsoft-graph/src/Http/GraphResponse.php');
-require_once($CFG->dirroot . '/mod/teams/vendor/microsoft/microsoft-graph/src/Model/Entity.php');
-require_once($CFG->dirroot . '/mod/teams/vendor/microsoft/microsoft-graph/src/Model/DirectoryObject.php');
-require_once($CFG->dirroot . '/mod/teams/vendor/microsoft/microsoft-graph/src/Model/User.php');
-require_once($CFG->dirroot . '/mod/teams/vendor/microsoft/microsoft-graph/src/Model/Group.php');
-require_once($CFG->dirroot . '/mod/teams/vendor/microsoft/microsoft-graph/src/Model/Team.php');
-require_once($CFG->dirroot . '/mod/teams/vendor/microsoft/microsoft-graph/src/Model/OnlineMeeting.php');
-require_once($CFG->dirroot . '/mod/teams/vendor/microsoft/microsoft-graph/src/Model/OnlineMeetingInfo.php');
-require_once($CFG->dirroot . '/mod/teams/vendor/microsoft/microsoft-graph/src/Model/Identity.php');
-require_once($CFG->dirroot . '/mod/teams/vendor/microsoft/microsoft-graph/src/Model/IdentitySet.php');
-require_once($CFG->dirroot . '/mod/teams/vendor/microsoft/microsoft-graph/src/Model/MeetingParticipantInfo.php');
-require_once($CFG->dirroot . '/mod/teams/vendor/microsoft/microsoft-graph/src/Model/MeetingParticipants.php');
-require_once($CFG->dirroot . '/mod/teams/vendor/microsoft/microsoft-graph/src/Model/Recipient.php');
-require_once($CFG->dirroot . '/mod/teams/vendor/microsoft/microsoft-graph/src/Model/AttendeeBase.php');
-require_once($CFG->dirroot . '/mod/teams/vendor/microsoft/microsoft-graph/src/Model/Attendee.php');
-require_once($CFG->dirroot . '/mod/teams/vendor/microsoft/microsoft-graph/src/Model/DateTimeTimeZone.php');
-require_once($CFG->dirroot . '/mod/teams/vendor/microsoft/microsoft-graph/src/Model/ItemBody.php');
-require_once($CFG->dirroot . '/mod/teams/vendor/microsoft/microsoft-graph/src/Model/OutlookItem.php');
-require_once($CFG->dirroot . '/mod/teams/vendor/microsoft/microsoft-graph/src/Model/Event.php');
 require_once($CFG->dirroot . '/mod/teams/classes/Office365.php');
 require_once($CFG->dirroot . '/calendar/lib.php');
 
@@ -298,7 +276,7 @@ function teams_get_coursemodule_info($coursemodule) {
     require_once("$CFG->dirroot/mod/url/locallib.php");
 
     if (!$resource = $DB->get_record('teams', array('id' => $coursemodule->instance),
-        'id, course, name, display, displayoptions, externalurl, intro, introformat, enrol_managers, population, selection, 
+        'id, course, name, display, displayoptions, externalurl, intro, introformat, enrol_managers, population, selection,
             resource_teams_id, creator_id, opendate, closedate, type, reuse_meeting, other_owners')) {
         return null;
     }
