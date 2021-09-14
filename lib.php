@@ -228,8 +228,17 @@ function teams_delete_instance($id) {
     $cm = get_coursemodule_from_instance('teams', $id);
     \core_completion\api::update_completion_date_event($cm->id, 'teams', $id, null);
 
-    // Note: all context files are deleted automatically.
+    // All context, files, calendar events, etc... are deleted automatically.
     $DB->delete_records('teams', array('id' => $team->id));
+
+    // Attempt to delete at Microsoft.
+    $manager = manager::get_instance();
+    if ($manager->is_available() && $manager->is_o365_user($team->creator_id)) {
+        $o365user = $manager->get_o365_user($team->creator_id);
+        $api = $manager->get_api();
+        $meetingid = $team->resource_teams_id;
+        $api->apicall('DELETE', "/users/{$o365user->objectid}/onlineMeetings/{$meetingid}");
+    }
 
     return true;
 }
