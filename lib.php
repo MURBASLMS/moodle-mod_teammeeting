@@ -44,7 +44,7 @@ function teams_supports($feature) {
         case FEATURE_COMPLETION_TRACKS_VIEWS: return true;
         case FEATURE_GRADE_HAS_GRADE:         return false;
         case FEATURE_GRADE_OUTCOMES:          return false;
-        case FEATURE_BACKUP_MOODLE2:          return false;
+        case FEATURE_BACKUP_MOODLE2:          return true;
         case FEATURE_SHOW_DESCRIPTION:        return true;
         default: return null;
     }
@@ -230,13 +230,18 @@ function teams_delete_instance($id) {
     // All context, files, calendar events, etc... are deleted automatically.
     $DB->delete_records('teams', array('id' => $team->id));
 
-    // Attempt to delete at Microsoft.
-    $manager = manager::get_instance();
-    if ($manager->is_available() && $manager->is_o365_user($team->creator_id)) {
-        $o365user = $manager->get_o365_user($team->creator_id);
-        $api = $manager->get_api();
-        $meetingid = $team->resource_teams_id;
-        $api->apicall('DELETE', "/users/{$o365user->objectid}/onlineMeetings/{$meetingid}");
+    // Attempt to delete at Microsoft. This is temporarily disabled because it currently
+    // conflicts with the ability to duplicate an activity. If an activity is duplicated, and
+    // either copies are deleted, the meeting link will be invalidated for both. The better
+    // strategy would be to create a new meeting upon restore but that has broader implications.
+    if (false) {
+        $manager = manager::get_instance();
+        if ($manager->is_available() && $manager->is_o365_user($team->creator_id)) {
+            $o365user = $manager->get_o365_user($team->creator_id);
+            $api = $manager->get_api();
+            $meetingid = $team->resource_teams_id;
+            $api->apicall('DELETE', "/users/{$o365user->objectid}/onlineMeetings/{$meetingid}");
+        }
     }
 
     return true;
