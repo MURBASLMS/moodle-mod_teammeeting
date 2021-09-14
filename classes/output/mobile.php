@@ -18,7 +18,7 @@
  * Provides {@see \mod_teams\output\mobile} class.
  *
  * @copyright  2021 Anthony Durif
- * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 namespace mod_teams\output;
@@ -31,9 +31,9 @@ require_once($CFG->dirroot . '/mod/teams/lib.php');
  * Controls the display of the plugin in the Mobile App.
  *
  * @package    mod_teams
- * @category  output
+ * @category   output
  * @copyright  2021 Anthony Durif
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class mobile {
 
@@ -44,7 +44,7 @@ class mobile {
      * @return object
      */
     public static function mobile_course_view($args) {
-        global $OUTPUT, $USER, $DB;
+        global $OUTPUT, $DB;
 
         $args = (object) $args;
         $cm = get_coursemodule_from_id('teams', $args->cmid);
@@ -55,52 +55,25 @@ class mobile {
 
         $teams = $DB->get_record('teams', ['id' => $cm->instance], '*', MUST_EXIST);
         $course = get_course($cm->course);
+        $canmanage = has_capability('mod/teams:addinstance', $context);
 
         // Pre-format some of the texts for the mobile app.
         $teams->name = external_format_string($teams->name, $context);
-        [$teams->intro, $teams->introformat] = external_format_text($teams->intro, $teams->introformat, $context, 'mod_teams', 'intro');
+        list($teams->intro, $teams->introformat) = external_format_text($teams->intro, $teams->introformat,
+            $context, 'mod_teams', 'intro');
 
         $details = teams_print_details_dates($teams, "text");
-        $office = get_office();
         $gotoresource = true;
-        if ($teams->type == "meeting") {
-            // Online meeting resource.
-            if ($teams->reuse_meeting == "0") {
-                try {
-                    $office->getMeetingObject($teams);
-                } catch (\Exception $e) {
-                    $details = get_string('meetingnotfound', 'mod_teams');
-                    $gotoresource = false;
-                }
-                if ($teams->opendate != 0) {
-                    if (strtotime("now") < $teams->opendate && !has_capability('mod/teams:addinstance', $context)) {
-                        $details = sprintf(get_string('meetingnotavailable', 'mod_teams'), teams_print_details_dates($teams, "text"));
-                        $gotoresource = false;
-                    }
-                }
-                if ($teams->closedate != 0 && strtotime("now") > $teams->closedate && !has_capability('mod/teams:addinstance', $context)) {
-                    $details = sprintf(get_string('meetingnotavailable', 'mod_teams'), teams_print_details_dates($teams, "text"));
-                    $gotoresource = false;
-                }
-                if ($gotoresource) {
-                    $details = teams_print_details_dates($teams, "text");
-                    $gotoresource = true;
-                }
-            }
 
-            if (!filter_var($teams->externalurl, FILTER_VALIDATE_URL)) {
-                $details = get_string('meetingnotfound', 'mod_teams');
-                $gotoresource = false;
-            }
-        } else {
-            // Team resource.
-            try {
-                $office->readTeam($teams->resource_teams_id);
-            } catch (\Exception $e) {
-                $details = get_string('teamnotfound', 'mod_teams');
+        // Once off online meeting.
+        if (!$teams->reuse_meeting) {
+            $isclosed = $teams->opendate > time() || $teams->closedate < time();
+            if (!$canmanage && $isclosed) {
+                $details = get_string('meetingnotavailable', 'mod_teams', teams_print_details_dates($teams, "text"));
                 $gotoresource = false;
             }
         }
+
 
         $defaulturl = new \moodle_url('/course/view.php', array('id' => $course->id));
         $defaulturl = $defaulturl->out();
