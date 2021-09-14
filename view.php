@@ -56,7 +56,7 @@ $courseurl = new moodle_url('/course/view.php', array('id' => $cm->course));
 $meetingurl = $resource->externalurl;
 
 if ($resource->type != manager::TYPE_MEETING) {
-    print_error('teamnotfound', 'mod_teams');
+    throw new \coding_exception('Instances of type teams are not currently supported.');
 }
 
 // Once off online meeting.
