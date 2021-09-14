@@ -49,8 +49,6 @@ $string['type_help'] = 'Teams resource type to create:
                             <li>Online meeting (virtual classroom): create immediatly a meeting (or virtual classroom) users will be able to join by clicking on the resource link.</li></ul>';
 $string['team'] = 'Team<br/>';
 $string['meeting'] = 'Online meeting<br/>Virtual classroom';
-$string['team_prefix'] = '[TEAM] ';
-$string['meeting_prefix'] = '[ONLINE MEETING] ';
 $string['population'] = 'Population ';
 $string['population_help'] = '<p>Select the populaton you want to enrol to the team:
                                 <ul><li>enrolled users: all enrolled users will be added as team members and all course managers will be added as this team owner</li>
@@ -75,9 +73,6 @@ $string['dates_help'] = '<div class="alert alert-info"><strong>Be careful, stude
                                     <li>If you do not select a start date or an end date, a default period will be used (since the hour of the meeting creation and using a default duration value set in moodle administration). Tests will be made on moodle when you click on the activity link to redirect you or not to the Teams meeting in function of these period.</li></ul></li>
                                     <li>Permanent meeting: The meeting is only available and visible on the course section where it has been added and is usable since its creation.</li></ul>
                                     <p>Important: All changes about teams and meetings directly made in Teams (update of the meeting name, dates...) will not be reflected on Moodle.</p>';
-$string['dates_between'] = 'between %s and %s';
-$string['dates_from'] = 'from %s';
-$string['dates_until'] = 'until %s';
 $string['error_groups'] = 'Please select at least one group or change the population field value.';
 $string['error_users'] = 'Please select at least one enrolled user or change the population field value.';
 $string['error_dates'] = 'Closing date must be later than start date.';
@@ -86,10 +81,10 @@ $string['no_owner'] = '<p>You are not a owner of this team so that\'s why you ca
                                 <p>Please contact a team owner to give you these administation rights.</p>';
 $string['teamnotfound'] = 'Access to this team is not possible. A problem may be running on Microsoft Server, in this cas retry to connect later. It is also possible an owner delete this team.';
 $string['meetingnotfound'] = 'Access to this team seems possible. A problem may be running on Microsoft Server, in this cas retry to connect later. It is also possible an organizer delete this meeting.';
-$string['meetingnotavailable'] = 'Access to this meeting (virtual classroom) is not available.%s In case of difficulties please contact your course manager(s).';
-$string['meetingavailable'] = 'Teams online meeting is available %s.';
+$string['meetingnotavailable'] = 'Access to this meeting is not available. {$a} In case of difficulties please contact your course manager(s).';
+$string['meetingavailablebetween'] = 'The online meeting is available between {$a->from} and {$a->to}.';
 $string['description'] = 'Team created for the course "%s".';
-$string['copy_link'] = 'Copy the resource link to the keyboard';
+$string['copy_link'] = 'Copy the meeting link to the clipboard';
 $string['create_mail_content'] = 'Hello,
 
 You have just created the Teams online meeting "{$a->name}" in your course "{$a->course}".
@@ -97,6 +92,7 @@ You have just created the Teams online meeting "{$a->name}" in your course "{$a-
 You can find this meeting by clicking on this link:
 [{$a->url}]
 ';
+$string['clicktoopen'] = 'Click {$a} link to open the meeting.';
 $string['create_mail_title'] = 'New Teams online meeting created';
 $string['messageprovider:meetingconfirm'] = 'Confirmation of the Teams online meeting creation';
 $string['notif_mail'] = 'Online meeting creation notification';

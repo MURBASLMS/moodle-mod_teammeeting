@@ -66,7 +66,7 @@ function teams_add_instance($data, $mform) {
     $manager->require_is_available();
     $manager->require_is_o365_user($USER->id);
 
-    // Fixing default display options.
+    // Fixing display options.
     $data->display = RESOURCELIB_DISPLAY_NEW;
     $data->displayoptions = serialize([]);
 
@@ -169,10 +169,6 @@ function teams_update_instance($data, $mform) {
     $manager = manager::get_instance();
     $manager->require_is_available();
 
-    // Fixing default display options.
-    $data->display = RESOURCELIB_DISPLAY_NEW;
-    $data->displayoptions = serialize([]);
-
     $data->name = $data->name;
     $data->intro = $data->intro;
     $data->introformat = $data->introformat;
@@ -218,7 +214,8 @@ function teams_update_instance($data, $mform) {
 
 /**
  * Delete teams instance.
- * @param int $id the id of the teams instance to delete
+ *
+ * @param int $id The id of the teams instance to delete.
  * @return bool true.
  */
 function teams_delete_instance($id) {
@@ -238,187 +235,31 @@ function teams_delete_instance($id) {
 }
 
 /**
- * Given a coursemodule object, this function returns the extra information needed to print this activity in various places.
- * Function adapted from the url_get_coursemodule_info function.
- * @param cm_info $coursemodule the course module.
- * @return cached_cm_info info
+ * Get the course module info.
+ *
+ * @param cm_info $coursemodule The course module.
+ * @return cached_cm_info The info.
  */
 function teams_get_coursemodule_info($coursemodule) {
-    global $CFG, $DB;
-    require_once("$CFG->dirroot/mod/url/locallib.php");
+    global $DB;
 
-    if (!$resource = $DB->get_record('teams', array('id' => $coursemodule->instance),
-        'id, course, name, display, displayoptions, externalurl, intro, introformat, enrol_managers, population, selection,
-            resource_teams_id, creator_id, opendate, closedate, type, reuse_meeting, other_owners')) {
+    if (!$resource = $DB->get_record('teams', ['id' => $coursemodule->instance], '*')) {
         return null;
     }
 
+    $fullurl = new moodle_url('/mod/teams/view.php', ['id' => $coursemodule->id, 'redirect' => 1]);
     $info = new cached_cm_info();
     $info->name = $resource->name;
-
-    $display = url_get_final_display_type($resource);
-
-    if ($display == RESOURCELIB_DISPLAY_POPUP) {
-        $fullurl = "$CFG->wwwroot/mod/teams/view.php?id=$coursemodule->id&amp;redirect=1";
-        $options = empty($resource->displayoptions) ? array() : unserialize($resource->displayoptions);
-        $width  = empty($options['popupwidth'])  ? 620 : $options['popupwidth'];
-        $height = empty($options['popupheight']) ? 450 : $options['popupheight'];
-        $wh = "width=$width,height=$height,toolbar=no,location=no,menubar=no,copyhistory=no,status=no,directories=no,scrollbars=yes,resizable=yes";
-        $info->onclick = "window.open('$fullurl', '', '$wh'); return false;";
-    } else if ($display == RESOURCELIB_DISPLAY_NEW) {
-        $fullurl = "$CFG->wwwroot/mod/teams/view.php?id=$coursemodule->id&amp;redirect=1";
-        $info->onclick = "window.open('$fullurl'); return false;";
-    }
+    $info->onclick = "window.open('{$fullurl->out(false)}'); return false;";
 
     if ($coursemodule->showdescription) {
         // Convert intro to html. Do not filter cached version, filters run at display time.
         $info->content = format_module_intro('teams', $resource, $coursemodule->id, false);
     }
 
-    $course = get_course($resource->course); // Get cached course.
-    $info->customdata = array('fullurl' => str_replace('&amp;', '&', url_get_full_url($resource, $coursemodule, $course)));
+    $info->customdata = ['fullurl' => $resource->externalurl];
 
     return $info;
-}
-
-/**
- * Returns object with the expected team members and used groups in the enrolment.
- * @param object $datas the datas of the team.
- * @param bool $form true if we are in the form context.
- * @return object
- * @throws dml_exception
- */
-function teams_get_population($datas, $form = true)
-{
-    global $DB;
-    $groups = [];
-    $members = [];
-
-    switch ($datas->population) {
-        case "course":
-            foreach (get_enrolled_users(context_course::instance($datas->course), 'mod/teams:view') as $member) {
-                if (!in_array($member, $members)) {
-                    $members[] = $member->email;
-                }
-            }
-            break;
-
-        case "students":
-            foreach (get_enrolled_users(context_course::instance($datas->course), 'mod/teams:view') as $member) {
-                if (!has_capability('mod/teams:addinstance', context_course::instance($datas->course), $member) && !in_array($member, $members)) {
-                    $members[] = $member->email;
-                }
-            }
-            break;
-
-        case "groups":
-            $datas->groups = ($form) ? $datas->groups : json_decode($datas->selection);
-            foreach ($datas->groups as $group) {
-                $groups[] = groups_get_group(intval($group));
-                foreach (groups_get_members(intval($group)) as $member) {
-                    if(!in_array($members, $member) && has_capability('mod/teams:view', context_course::instance($datas->course), $member)) {
-                        $members[] = $member->email;
-                    }
-                }
-            }
-            break;
-
-        case "users":
-            $members = ($form) ? $datas->users : json_decode($datas->selection);
-            foreach ($members as $key => $member) {
-                $user = $DB->get_record('user', array('email' => $member));
-                if (!$user || !has_capability('mod/teams:view', context_course::instance($datas->course), $user)) {
-                    unset($members[$key]);
-                }
-            }
-            break;
-
-        default: break;
-    }
-
-    $response = new stdClass();
-    $response->groups = $groups;
-    $response->members = $members;
-
-    return $response;
-}
-
-/**
- * Returns the selection in function of the teams population choice
- * @param $datas the datas of the team.
- * @return mixed|null list of selected groups or users, null in other cases.
- */
-function teams_get_selection($datas)
-{
-    return ($datas->population == "groups") ? $datas->groups : ( ($datas->population == "users") ? $datas->users : null );
-}
-
-/**
- * Lists expected teams owners.
- * @param $course the course.
- * @param null $team the team if it has already been created.
- * @return array array of users/owners email.
- * @throws dml_exception
- */
-function teams_get_owners($course, $team = null)
-{
-    global $CFG, $PAGE, $DB;
-    require_once($CFG->dirroot.'/enrol/locallib.php');
-
-    $managers = null;
-
-    if ($team && !$team->enrol_managers)  {
-        $managers = [core_user::get_user($team->creator_id, 'email')->email];
-        if ($team->other_owners) {
-            $managers = array_merge(array_values($managers), json_decode($team->other_owners));
-        }
-    } else {
-        $manager = new course_enrolment_manager($PAGE, $course, 0, 1, '', 0, -1);
-        $results = $manager->get_users_for_display($manager, 'lastname', 'ASC', 0, 100);
-
-        if ($results) {
-            $managers = [];
-            foreach ($results as $key => $manager) {
-                $user = $DB->get_record('user', array('id' => $manager['userid']));
-                if ($user) {
-                    $managers[] = $user->email;
-                } else {
-                    continue;
-                }
-            }
-        }
-
-        if ($team) {
-            if (!in_array(core_user::get_user($team->creator_id, 'email')->email, $managers)) {
-                $managers[] = core_user::get_user($team->creator_id, 'email')->email;
-            }
-        }
-    }
-
-    return is_array($managers) ? array_unique($managers) : $managers;
-}
-
-/**
- * Checks if the user given in params is an owner of the team given in params.
- * @param $team the team.
- * @param $user the user.
- * @return bool true if the user is a this team owner.
- * @throws dml_exception
- */
-function teams_is_owner($team, $user)
-{
-    return in_array($user->email, teams_get_owners(get_course($team->course), $team));
-}
-
-/**
- * Return the Office365 object to do API calls.
- * @return Office365
- * @throws dml_exception
- */
-function get_office()
-{
-    // TODO Do not use config.
-    return new Office365(get_config('mod_teams', 'tenant_id'), get_config('mod_teams', 'client_id'), get_config('mod_teams', 'client_secret'));
 }
 
 /**
@@ -458,84 +299,29 @@ function teams_set_events($team) {
 }
 
 /**
- * Prints team info and link to the teams resource.
- * @param object $team the team.
- * @param object $cm the course module.
- * @param object $course the course.
- * @return does not return
- */
-function teams_print_workaround($team, $cm, $course) {
-    global $OUTPUT;
-
-    url_print_header($team, $cm, $course);
-    url_print_heading($team, $cm, $course, true);
-    url_print_intro($team, $cm, $course, true);
-
-    $fullurl = url_get_full_url($team, $cm, $course);
-
-    $display = url_get_final_display_type($team);
-    if ($display == RESOURCELIB_DISPLAY_POPUP) {
-        $jsfullurl = addslashes_js($fullurl);
-        $options = empty($team->displayoptions) ? array() : unserialize($team->displayoptions);
-        $width  = empty($options['popupwidth'])  ? 620 : $options['popupwidth'];
-        $height = empty($options['popupheight']) ? 450 : $options['popupheight'];
-        $wh = "width=$width,height=$height,toolbar=no,location=no,menubar=no,copyhistory=no,status=no,directories=no,scrollbars=yes,resizable=yes";
-        $extra = "onclick=\"window.open('$jsfullurl', '', '$wh'); return false;\"";
-    } else if ($display == RESOURCELIB_DISPLAY_NEW) {
-        $extra = "onclick=\"this.target='_blank';\"";
-    } else {
-        $extra = '';
-    }
-
-   echo teams_print_details_dates($team);
-
-    echo '<div class="urlworkaround">';
-    print_string('clicktoopen', 'url', "<a id='teams_resource_url' href=\"$fullurl\" $extra>$fullurl</a>");
-    echo '</div>';
-
-    echo '<br><div id="teams_url_copydiv"><button class="btn btn-default" id="teams_url_copybtn">';
-    echo html_writer::tag('img', '', array('src' => $OUTPUT->image_url('e/insert_edit_link', 'core'), 'style' => 'margin-right: 5px;'));
-    echo get_string('copy_link', 'mod_teams'). '</button></div>';
-
-    // Script to copy the link.
-    echo '<script>
-            var btn = document.getElementById(\'teams_url_copybtn\');
-            btn.addEventListener(\'click\', function(event) {
-            var div = document.querySelector(\'#teams_url_copydiv\');
-            var input = div.appendChild(document.createElement("input"));
-            input.value = document.querySelector(\'#teams_resource_url\').innerHTML;
-            input.focus();
-            input.select();
-            document.execCommand(\'copy\');
-            input.parentNode.removeChild(input);
-            });
-        </script>';
-
-    echo $OUTPUT->footer();
-    die;
-}
-
-/**
  * Prints information about the availability of the online meeting.
- * @param $team the teams instance.
- * @param string $format the format ('html' by default, 'text' can be used for notification).
- * @return string the information about the meeting.
+ *
+ * @param object $team The teams instance.
+ * @param string $format The format ('html' by default, 'text' can be used for notification).
+ * @return string The information about the meeting.
  * @throws coding_exception
  */
-function teams_print_details_dates($team, $format = 'html')
-{
+function teams_print_details_dates($team, $format = 'html') {
     global $OUTPUT;
-    if ($team->type == 'meeting') {
-        if ($team->opendate != 0) {
-            $details = ($team->closedate != 0) ? sprintf(get_string('dates_between', 'mod_teams'), date('d/m/Y H:i', $team->opendate), date('d/m/Y H:i', $team->closedate))  : sprintf(get_string('dates_from', 'mod_teams'), date('d/m/Y H:i', $team->opendate));
-        } else if ($team->closedate != 0) {
-            $details = sprintf(get_string('dates_until', 'mod_teams'), date('d/m/Y H:i', $team->closedate));
+    if ($team->type == manager::TYPE_MEETING && !$team->reuse_meeting) {
+        $msg = get_string('meetingavailablebetween', 'mod_teams', [
+            'from' => userdate($team->opendate, get_string('strftimedatetimeshort', 'core_langconfig')),
+            'to' => userdate($team->closedate, get_string('strftimedatetimeshort', 'core_langconfig')),
+        ]);
+
+        if ($format != 'html') {
+            return $msg;
         }
-        if ($details) {
-            $msg = sprintf(get_string('meetingavailable', 'mod_teams'), $details);
-            $icon = html_writer::tag('img', '', array('src' => $OUTPUT->image_url('i/info'), 'style' => 'margin-right: 5px;'));
-            return ($format == 'html') ? '<div>'. $icon . $msg .'</div><br/>' : $msg;
-        }
+
+        return html_writer::div(
+            $OUTPUT->pix_icon('i/info', '', 'core') .
+            $msg
+        );
     }
 
     return '';

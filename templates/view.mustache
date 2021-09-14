@@ -1,0 +1,63 @@
+{{!
+    This file is part of Moodle - https://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_teams/view
+
+    Render the view used in the main page.
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * none
+
+    Context variables required for this template:
+    * meetingurl - [string] The meeting URL.
+
+    Example context (json):
+    {
+        "meetingurl": "https://example.com"
+    }
+}}
+
+<div class="mt-3">
+    <a id="teams_resource_url" href="{{ meetingurl }}" target="_blank">{{#str}} clicktoopen, mod_teams {{/str}}</a>
+</div>
+
+<div id="teams_url_copydiv" class="mt-3">
+    <button class="btn btn-default btn-secondary" id="teams_url_copybtn" type="button">
+        {{#pix}} e/insert_edit_link, core {{/pix}}
+        {{#str}} copy_link, mod_teams {{/str}}
+    </button>
+</div>
+
+{{#js}}
+require([], function() {
+    var meetingurl = "{{ meetingurl }}";
+    var btn = document.getElementById('teams_url_copybtn');
+    btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        var div = document.getElementById('teams_url_copydiv');
+        var input = div.appendChild(document.createElement('input'));
+        input.value = meetingurl;
+        input.focus();
+        input.select();
+        document.execCommand('copy');
+        input.parentNode.removeChild(input);
+    });
+});
+{{/js}}

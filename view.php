@@ -16,23 +16,23 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Teams module main user interface
+ * Teams module main user interface.
  *
  * @package    mod_teams
  * @copyright  2020 Université Clermont Auvergne
  */
 
-require_once('../../config.php');
-require_once("lib.php");
-require_once("$CFG->dirroot/mod/url/locallib.php");
+use mod_teams\manager;
+
+require_once(__DIR__ . '/../../config.php');
+require_once($CFG->dirroot . '/mod/teams/lib.php');
 require_once($CFG->libdir . '/completionlib.php');
-require_once($CFG->dirroot.'/mod/teams/vendor/autoload.php');
 
 $id = required_param('id', PARAM_INT); // Course Module ID.
-$u = optional_param('u', 0, PARAM_INT); // URL instance id.
+$u = optional_param('u', 0, PARAM_INT); // Team instance id.
 $redirect = optional_param('redirect', 0, PARAM_BOOL);
 
-if ($u) {  // Two ways to specify the module.
+if ($u) { // Two ways to specify the module.
     $resource = $DB->get_record('teams', array('id' => $u), '*', MUST_EXIST);
     $cm = get_coursemodule_from_instance('teams', $resource->id, $resource->course, false, MUST_EXIST);
 } else {
@@ -42,55 +42,36 @@ if ($u) {  // Two ways to specify the module.
 $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
 
 require_course_login($course, true, $cm);
+
 $context = context_module::instance($cm->id);
 require_capability('mod/teams:view', $context);
 
-$params = array(
-    'context' => $context,
-    'objectid' => $resource->id
-);
-
 $PAGE->set_url('/mod/teams/view.php', array('id' => $cm->id));
+$PAGE->set_title($course->shortname . ': ' . $resource->name);
+$PAGE->set_heading($course->fullname);
+$PAGE->set_activity_record($resource);
 
-$office = get_office();
-if ($resource->type == "meeting") { // Online meeting.
-    if ($resource->reuse_meeting == "0") {
-        // Ponctual online meeting.
-        try {
-            $office->getMeetingObject($resource);
-        } catch (Exception $e) {
-            notice(get_string('meetingnotfound', 'mod_teams'), new moodle_url('/course/view.php', array('id' => $cm->course)));
-            die;
-        }
+$canmanage = has_capability('mod/teams:addinstance', $context);
+$courseurl = new moodle_url('/course/view.php', array('id' => $cm->course));
+$meetingurl = $resource->externalurl;
 
-        if ($resource->opendate != 0) {
-            if (strtotime("now") < $resource->opendate && !has_capability('mod/teams:addinstance', $context)) {
-                notice(sprintf(get_string('meetingnotavailable', 'mod_teams'), teams_print_details_dates($resource, "text")), new moodle_url('/course/view.php', array('id' => $cm->course)));
-                die;
-            }
-        }
-        if ($resource->closedate != 0 && strtotime("now") > $resource->closedate && !has_capability('mod/teams:addinstance', $context)) {
-            notice(sprintf(get_string('meetingnotavailable', 'mod_teams'), teams_print_details_dates($resource, "text")), new moodle_url('/course/view.php', array('id' => $cm->course)));
-            die;
-        }
-    }
+if ($resource->type != manager::TYPE_MEETING) {
+    print_error('teamnotfound', 'mod_teams');
+}
 
-    if (!filter_var($resource->externalurl, FILTER_VALIDATE_URL)) { // Incorrect Teams meeting url ?
-        notice(get_string('meetingnotfound', 'mod_teams'), new moodle_url('/course/view.php', array('id' => $cm->course)));
-        die;
-    }
-} else {
-    try {
-        $team = $office->readTeam($resource->resource_teams_id);
-    }
-    catch (Exception $e) {
-        // Team not found.
-        notice(get_string('teamnotfound', 'mod_teams'), new moodle_url('/course/view.php', array('id' => $cm->course)));
-        die;
+// Once off online meeting.
+if (!$resource->reuse_meeting) {
+    $isclosed = $resource->opendate > time() || $resource->closedate < time();
+    if (!$canmanage && $isclosed) {
+        notice(get_string('meetingnotavailable', 'mod_teams', teams_print_details_dates($resource, "text")), $courseurl);
+        die();
     }
 }
 
-$event = \mod_teams\event\course_module_viewed::create($params);
+$event = \mod_teams\event\course_module_viewed::create([
+    'context' => $context,
+    'objectid' => $resource->id
+]);
 $event->add_record_snapshot('course_modules', $cm);
 $event->add_record_snapshot('course', $course);
 $event->add_record_snapshot('teams', $resource);
@@ -100,60 +81,29 @@ $event->trigger();
 $completion = new completion_info($course);
 $completion->set_module_viewed($cm);
 
-// Make sure URL exists before generating output - some older sites may contain empty urls.
-// Do not use PARAM_URL here, it is too strict and does not support general URIs!
-$exturl = trim($resource->externalurl);
-if (empty($exturl) or $exturl === 'http://') {
-    url_print_header($resource, $cm, $course);
-    url_print_heading($resource, $cm, $course);
-    url_print_intro($resource, $cm, $course);
-    notice(get_string('invalidstoredurl', 'url'), new moodle_url('/course/view.php', array('id' => $cm->course)));
-    die;
-}
-unset($exturl);
-
-$displaytype = url_get_final_display_type($resource);
-if ($displaytype == RESOURCELIB_DISPLAY_OPEN) {
-    // For 'open' links, we always redirect to the content - except if the user.
-    // just chose 'save and display' from the form then that would be confusing.
-    if (!isset($_SERVER['HTTP_REFERER']) || strpos($_SERVER['HTTP_REFERER'], 'modedit.php') === false) {
-        $redirect = true;
-    }
-}
-
+// If a redirect is request.
 if ($redirect) {
-    // coming from course page or url index page,
-    // the redirection is needed for completion tracking and logging.
-    $fullurl = str_replace('&amp;', '&', url_get_full_url($resource, $cm, $course));
 
-    if (!course_get_format($course)->has_view_page()) {
-        // If course format does not have a view page, add redirection delay with a link to the edit page.
-        // Otherwise teacher is redirected to the external URL without any possibility to edit activity or course settings.
-        $editurl = null;
-        if (has_capability('moodle/course:manageactivities', $context)) {
-            $editurl = new moodle_url('/course/modedit.php', array('update' => $cm->id));
-            $edittext = get_string('editthisactivity');
-        } else if (has_capability('moodle/course:update', $context->get_course_context())) {
-            $editurl = new moodle_url('/course/edit.php', array('id' => $course->id));
-            $edittext = get_string('editcoursesettings');
-        }
-        if ($editurl) {
-            redirect($fullurl, html_writer::link($editurl, $edittext)."<br/>".
-                    get_string('pageshouldredirect'), 10);
-        }
+    // When the course does not have a view page, we should not redirect teachers right-away,
+    // or they could be stuck not being able to edit the page. We always show them the intermediate page.
+    $hascoursepage = course_get_format($course)->has_view_page();
+    if ($hascoursepage || !$canmanage) {
+        redirect($meetingurl);
     }
-    redirect($fullurl);
 }
 
-// Display options. We use some functions of the url module.
-switch ($displaytype) {
-    case RESOURCELIB_DISPLAY_EMBED:
-        url_display_embed($resource, $cm, $course);
-        break;
-    case RESOURCELIB_DISPLAY_FRAME:
-        url_display_frame($resource, $cm, $course);
-        break;
-    default:
-        teams_print_workaround($resource, $cm, $course); // Specific display to add custom information.
-        break;
+// Display the page.
+echo $OUTPUT->header();
+echo $OUTPUT->heading(format_string($resource->name), 2);
+
+if (!empty($resource->intro)) {
+    echo $OUTPUT->box(format_module_intro('teams', $resource, $cm->id), 'generalbox', 'intro');
 }
+
+echo teams_print_details_dates($resource);
+
+echo $OUTPUT->render_from_template('mod_teams/view', [
+    'meetingurl' => $meetingurl
+]);
+
+echo $OUTPUT->footer();
