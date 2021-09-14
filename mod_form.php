@@ -132,12 +132,18 @@ class mod_teams_mod_form extends moodleform_mod {
     public function validation($data, $files) {
         $errors = parent::validation($data, $files);
 
+        $isedit = !empty($this->current->id);
+        $haschangeddates = !$isedit || ($this->current->opendate != $data['opendate']
+            || $this->current->closedate != $data['closedate']);
+
         if (!$data['reuse_meeting']) {
-            if (!empty($data['closedate']) && $data['closedate'] < time()) {
-                $errors['closedate'] = get_string('error_dates_past', 'mod_teams');
+            if ($haschangeddates && (!empty($data['closedate']) && $data['closedate'] < time())) {
+                // Only validate this on new, or edits where dates have changed, otherwise
+                // we wouldn't be able to edit an instance that has been finished.
+                $errors['closedate'] = get_string('errordatespast', 'mod_teams');
             }
             if (!empty($data['closedate']) && $data['opendate'] >= $data['closedate']) {
-                $errors['closedate'] = get_string('error_dates', 'mod_teams');
+                $errors['closedate'] = get_string('errordates', 'mod_teams');
             }
         }
 

@@ -81,6 +81,8 @@ $string['no_owner'] = '<p>You are not a owner of this team so that\'s why you ca
                                 <p>Please contact a team owner to give you these administation rights.</p>';
 $string['teamnotfound'] = 'Access to this team is not possible. A problem may be running on Microsoft Server, in this cas retry to connect later. It is also possible an owner delete this team.';
 $string['meetingnotfound'] = 'Access to this team seems possible. A problem may be running on Microsoft Server, in this cas retry to connect later. It is also possible an organizer delete this meeting.';
+$string['errordates'] = 'The closing date must come after the start date.';
+$string['errordatespast'] = 'The closing date cannot be set in the past.';
 $string['meetingnotavailable'] = 'Access to this meeting is not available. {$a} In case of difficulties please contact your course manager(s).';
 $string['meetingavailablebetween'] = 'The online meeting is available between {$a->from} and {$a->to}.';
 $string['description'] = 'Team created for the course "%s".';
