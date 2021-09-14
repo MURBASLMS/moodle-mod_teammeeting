@@ -21,28 +21,34 @@
  * @copyright 2021 Université Clermont Auvergne
  */
 
-require_once("../../config.php");
-require_once($CFG->dirroot.'/mod/teams/lib.php');
+require_once(__DIR__ . '/../../config.php');
+require_once($CFG->dirroot . '/mod/teams/lib.php');
+
 // For this type of page this is the course id.
 $id = required_param('id', PARAM_INT);
 
 $course = $DB->get_record('course', array('id' => $id), '*', MUST_EXIST);
 require_login($course);
+
+$context = context_course::instance($course->id);
+
 $PAGE->set_url('/mod/teams/index.php', array('id' => $id));
 $PAGE->set_pagelayout('incourse');
 
-$params = array(
-    'context' => context_course::instance($course->id)
-);
+$event = \mod_teams\event\course_module_instance_list_viewed::create(['context' => $context]);
+$event->add_record_snapshot('course', $course);
+$event->trigger();
 
 // Print the header.
 $strplural = get_string("modulenameplural", "teams");
 $PAGE->navbar->add($strplural);
 $PAGE->set_title($strplural);
 $PAGE->set_heading($course->fullname);
+
 echo $OUTPUT->header();
 echo $OUTPUT->heading(format_string($strplural));
-require_capability('mod/teams:view', $params['context']);
+
+require_capability('mod/teams:view', $context);
 
 $teams = get_all_instances_in_course('teams', $course);
 if (!$teams) {
@@ -52,8 +58,8 @@ if (!$teams) {
 
 // Print the table.
 $table = new html_table();
-$table->head = array(get_string('sectionname', 'format_'.$course->format), get_string('name'), get_string('type', 'core_search'));
-$table->align = array('left', 'left', 'center');
+$table->head = array(get_string('sectionname', 'format_' . $course->format), get_string('name'));
+$table->align = array('left', 'left');
 
 foreach ($teams as $team) {
     if (has_capability('mod/teams:view', context_module::instance($team->coursemodule))) {
@@ -64,8 +70,7 @@ foreach ($teams as $team) {
             // Show normal if the mod is visible.
             $link = '<a href="view.php?id=' . $team->coursemodule . '">' . format_string($team->name) . '</a>';
         }
-        $type = get_string('teams:' . $team->type, 'teams');
-        $table->data[] = array(get_section_name($course, $team->section), $link, $type);
+        $table->data[] = array(get_section_name($course, $team->section), $link);
     }
 }
 
