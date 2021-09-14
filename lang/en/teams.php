@@ -48,7 +48,7 @@ $string['create_mail_content'] = 'Hello,
 You have just created the Teams online meeting "{$a->name}" in your course "{$a->course}".
 
 You can find this meeting by clicking on this link:
-[{$a->url}]
+[{$a->url}]({$a->url})
 ';
 $string['clicktoopen'] = 'Click {$a} link to open the meeting.';
 $string['create_mail_title'] = 'New Teams online meeting created';
