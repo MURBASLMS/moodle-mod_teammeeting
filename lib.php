@@ -16,17 +16,20 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Mandatory public API of teams module
+ * Mandatory public API of teams module.
  *
  * @package    mod_teams
  * @copyright  2020 Université Clermont Auvergne
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use mod_teams\manager;
+
 defined('MOODLE_INTERNAL') || die;
 
 require_once($CFG->dirroot . '/mod/teams/classes/Office365.php');
 require_once($CFG->dirroot . '/calendar/lib.php');
+require_once($CFG->libdir . '/resourcelib.php');
 
 /**
  * List of features supported in Folder module
@@ -50,198 +53,167 @@ function teams_supports($feature) {
 
 /**
  * Add teams instance.
- * @param object $data the form data.
- * @param object $mform the form.
- * @return int the new teams instance id
+ *
+ * @param object $data The form data.
+ * @param object $mform The form.
+ * @return int The new teams instance id.
  */
 function teams_add_instance($data, $mform) {
-    global $CFG, $DB, $USER, $COURSE;
+    global $DB, $USER, $COURSE;
 
-    require_once($CFG->dirroot.'/mod/url/locallib.php');
+    $context = context_course::instance($COURSE->id);
+    $manager = manager::get_instance();
+    $manager->require_is_available();
+    $manager->require_is_o365_user($USER->id);
 
-    if (!empty($data->name)) {
-        // Fixing default display options.
-        $displayoptions = array();
-        $data->display = RESOURCELIB_DISPLAY_NEW;
-        $data->displayoptions = serialize($displayoptions);
-        $given_name = $data->name;
-        $data->name = $given_name;
-        $data->intro = $data->intro;
-        $data->introformat = "1";
-        $data->timemodified = time();
-        $data->population = ($data->type == "team") ? $data->population : "meeting";
-        $data->enrol_managers = ($data->population != "course") ? (($data->type == "meeting") ? false : ($data->owners == "managers")) : true;
-        $data->other_owners = ($data->other_owners) ? json_encode($data->other_owners) : null;
+    // Fixing default display options.
+    $data->display = RESOURCELIB_DISPLAY_NEW;
+    $data->displayoptions = serialize([]);
 
-        try {
-            $office = get_office();
-            $userId = $office->getUserId($USER->email);
-        } catch (Throwable $th) {
-            new Exception(get_string('notfound', 'mod_teams'));
-        }
+    $data->name = $data->name;
+    $data->intro = $data->intro;
+    $data->introformat = $data->introformat;
+    $data->timemodified = time();
+    $data->population = $data->type == manager::TYPE_TEAM ? $data->population : "meeting";
+    $data->enrol_managers = false;
+    $data->other_owners = null;
 
-        if (empty($data->useopendate)) {
-            $data->opendate = 0;
-        }
-        if (empty($data->useclosedate)) {
-            $data->closedate = 0;
-        }
-
-        $data->population = ($data->type == "team") ? $data->population : "meeting";
-        if ($data->type == "team") {
-            // Team creation.
-            $population = teams_get_population($data);
-            $selection = teams_get_selection($data);
-            $data->selection = ($selection) ? json_encode($selection) : null;
-            $data->members = json_encode($population->members);
-
-            $users = [];
-            $users[] = $userId;
-            if (teams_get_owners($COURSE)) {
-                foreach (teams_get_owners($COURSE) as $member) {
-                    try {
-                        $user_id = $office->getUserId($member);
-                        if (!in_array($user_id, $users)) {
-                            $users[] = $office->getUserId($member);
-                        }
-                    } catch (Throwable $th) {
-                        continue;
-                    }
-                }
-            }
-
-            $modelteam_id = get_config('mod_teams', 'team_model');
-            if ($modelteam_id) {
-                // We create the team by forking the model team.
-                $team = $office->copyTeam($modelteam_id, $given_name, sprintf(get_string('description', 'mod_teams'), $COURSE->fullname), $users);
-            } else {
-                // We create a "default" team.
-                $data->team_id = $office->createGroup($given_name, sprintf(get_string('description', 'mod_teams'), $COURSE->fullname), $users);
-                $team = $office->createTeam($data->team_id);
-            }
-
-            if ($team->getId()) {
-                $office->updateGroupOwners($team->getId(), $users);
-            }
-            $data->resource_teams_id = $team->getId();
-            $data->externalurl = url_fix_submitted_url($team->getProperties()['webUrl']);
-        } else {
-            // Online meeting creation.
-            $meeting = ($data->reuse_meeting == 0)
-                ? $office->createBroadcastEvent($given_name, $data->opendate, $data->closedate, $USER)
-                : $office->createOnlineMeeting($userId, $given_name);
-            $data->resource_teams_id = $meeting->getId();
-            $data->externalurl = ($data->reuse_meeting == 0) ? $meeting->getOnlineMeeting()->getJoinUrl() : $meeting->getJoinWebUrl();
-            if ($data->reuse_meeting == 0) {
-                // We match the dates of the Teams calendar event with Moodle calendar.
-                $data->opendate = ($data->opendate > 0) ? $data->opendate : strtotime($meeting->getStart()->getDateTime());
-                $data->closedate = ($data->closedate > 0) ? $data->closedate : strtotime($meeting->getEnd()->getDateTime());
-            }
-
-            if ($data->externalurl != null) {
-                if (get_config('mod_teams', 'notif_mail') == true) {
-                    // Send meeting link to the creator.
-                    $text = sprintf(get_string('create_mail_content', 'mod_teams'), $given_name, $COURSE->fullname);
-                    $html = html_writer::start_tag('div') . PHP_EOL;
-                    $html .= html_writer::tag('p', str_replace("\\n", "<br>", $text)) . PHP_EOL;
-                    $text .= $meeting->getJoinWebUrl();
-                    $html .= html_writer::link($meeting->getJoinWebUrl() , $meeting->getJoinWebUrl(), array('target' => '_blank'));
-                    $html .= html_writer::end_tag('div') . PHP_EOL;
-
-                    // Creation notification.
-                    $message = new \core\message\message();
-                    $message->courseid = $COURSE->id;
-                    $message->component = 'mod_teams';
-                    $message->name = 'meetingconfirm';
-                    $message->userfrom = get_admin();
-                    $message->userto = $USER;
-                    $message->subject = get_string('create_mail_title', 'mod_teams');
-                    $message->fullmessage = $text;
-                    $message->fullmessageformat = FORMAT_PLAIN;
-                    $message->fullmessagehtml = $html;
-                    $message->smallmessage = get_string('create_mail_title', 'mod_teams');
-                    $message->notification = 1;
-                    message_send($message);
-                }
-            }
-        }
-
-        $data->creator_id = $USER->id;
-        $data->id = $DB->insert_record('teams', $data); // Insert in database.
-        teams_set_events($data); // Create meeting events if defined
+    // Creating the meeting at Microsoft.
+    $o365user = $manager->get_o365_user($USER->id);
+    $api = $manager->get_api();
+    $meetingdata = [
+        'allowedPresenters' => 'organizer',
+        'autoAdmittedUsers' => 'everyone',
+        'lobbyBypassSettings' => [
+            'scope' => 'everyone',
+            'isDialInBypassEnabled' => true
+        ],
+        'participants' => [
+            'organizer' => [
+                'identity' => [
+                    'user' => [
+                        'id' => $o365user->objectid,
+                    ],
+                ],
+                'upn' => $o365user->upn,
+                'role' => 'presenter',
+            ],
+        ],
+        'subject' => format_string($data->name, true, ['context' => $context])
+    ];
+    if (!$data->reuse_meeting) {
+        $meetingdata = array_merge($meetingdata, [
+            'startDateTime' => (new DateTimeImmutable("@{$data->opendate}", new DateTimeZone('UTC')))->format('Y-m-d\TH:i:s\Z'),
+            'endDateTime' => (new DateTimeImmutable("@{$data->closedate}", new DateTimeZone('UTC')))->format('Y-m-d\TH:i:s\Z'),
+            'isBroadcast' => true,
+        ]);
     }
+
+    $resp = $api->apicall('POST', '/users/' . $o365user->objectid . '/onlineMeetings', json_encode($meetingdata));
+    $result = $api->process_apicall_response($resp, [
+        'id' => null,
+        'startDateTime' => null,
+        'endDateTime' => null,
+        'joinWebUrl' => null,
+    ]);
+    $meetingid = $result['id'];
+    $joinurl = $result['joinWebUrl'];
+
+    // Creating the activity.
+    $data->resource_teams_id = $meetingid;
+    $data->externalurl = $joinurl;
+    $data->creator_id = $USER->id;
+    $data->id = $DB->insert_record('teams', $data);
+
+    // Send meeting link to the creator.
+    if ((bool) get_config('mod_teams', 'notif_mail')) {
+        $content = markdown_to_html(get_string('create_mail_content', 'mod_teams', [
+            'name' => format_string($data->name, true, ['context' => $context]),
+            'course' => format_string($COURSE->fullname, true, ['context' => $context]),
+            'url' => $joinurl,
+        ]));
+
+        // Creation notification.
+        $message = new \core\message\message();
+        $message->courseid = $COURSE->id;
+        $message->component = 'mod_teams';
+        $message->name = 'meetingconfirm';
+        $message->userfrom = core_user::get_noreply_user();
+        $message->userto = $USER;
+        $message->subject = get_string('create_mail_title', 'mod_teams');
+        $message->fullmessage = html_to_text($content);
+        $message->fullmessageformat = FORMAT_PLAIN;
+        $message->fullmessagehtml = $content;
+        $message->smallmessage = get_string('create_mail_title', 'mod_teams');
+        $message->notification = 1;
+        message_send($message);
+    }
+
+    // Create the calendar events.
+    teams_set_events($data);
 
     return $data->id;
 }
 
 /**
  * Update teams instance.
+ *
  * @param object $data the form data.
  * @param object $mform the form.
  * @return bool true if update ok and false in other cases.
  */
 function teams_update_instance($data, $mform) {
-    global $CFG, $DB, $USER;
+    global $DB, $COURSE;
 
-    require_once($CFG->dirroot.'/mod/url/locallib.php');
+    $context = context_course::instance($COURSE->id);
+    $manager = manager::get_instance();
+    $manager->require_is_available();
 
-    if (!empty($data->name)) {
-        // Fixing default display options.
-        $displayoptions = array();
-        $data->display = RESOURCELIB_DISPLAY_NEW;
-        $data->displayoptions = serialize($displayoptions);
-        $given_name = $data->name;
-        $data->name = $given_name;
-        $data->intro = $data->intro;
-        $data->introformat = "1";
-        $data->timemodified = time();
-        $data->population = ($data->type == "team") ? $data->population : "meeting";
-        $data->enrol_managers = ($data->population != "course") ? (($data->type == "meeting") ? false : ($data->owners == "managers")) : true;
-        $data->other_owners = ($data->other_owners) ? json_encode($data->other_owners) : null;
+    // Fixing default display options.
+    $data->display = RESOURCELIB_DISPLAY_NEW;
+    $data->displayoptions = serialize([]);
 
-        if (empty($data->useopendate)) {
-            $data->opendate = 0;
+    $data->name = $data->name;
+    $data->intro = $data->intro;
+    $data->introformat = $data->introformat;
+    $data->timemodified = time();
+
+    $team = $DB->get_record('teams', ['id' => $data->instance]);
+    $requiresupdate = $team->opendate != $data->opendate || $team->closedate != $data->closedate || $team->name != $data->name;
+
+    if ($requiresupdate) {
+        $manager->require_is_o365_user($team->creator_id);
+
+        // Updating the meeting at Microsoft.
+        $o365user = $manager->get_o365_user($team->creator_id);
+        $api = $manager->get_api();
+        $meetingdata = [
+            'subject' => format_string($data->name, true, ['context' => $context])
+        ];
+        if (!$data->reuse_meeting) {
+            $meetingdata = array_merge($meetingdata, [
+                'startDateTime' => (new DateTimeImmutable("@{$data->opendate}", new DateTimeZone('UTC')))->format('Y-m-d\TH:i:s\Z'),
+                'endDateTime' => (new DateTimeImmutable("@{$data->closedate}", new DateTimeZone('UTC')))->format('Y-m-d\TH:i:s\Z'),
+            ]);
         }
-        if (empty($data->useclosedate)) {
-            $data->closedate = 0;
-        }
 
-        if ($data->type == "team") {
-            // Team update.
-            $population = teams_get_population($data);
-            $selection = teams_get_selection($data);
-            $data->selection = ($selection) ? json_encode($selection) : null;
-            $data->members = json_encode($population->members);
-        } else {
-            $team = $DB->get_record('teams', array('id' => $data->instance));
-            if ($data->opendate != $team->opendate || $data->closedate != $team->closedate || $team->name != $data->name) {
-                // We update the event dates.
-                try {
-                    $office = get_office();
-                    $creator = $DB->get_record('user', array('id' => $team->creator_id));
-                    $userId = $office->getUserId($creator->email);
-                } catch (Throwable $th) {
-                    new Exception(get_string('notfound', 'mod_teams'));
-                }
-                $meeting = $office->updateBroadcastEvent($team->resource_teams_id, $data, $creator);
-                if ($data->reuse_meeting == 0) {
-                    // We match the dates of the Teams calendar event with Moodle calendar.
-                    $data->opendate = ($data->opendate > 0) ? $data->opendate : strtotime($meeting->getStart()->getDateTime());
-                    $data->closedate = ($data->closedate > 0) ? $data->closedate : strtotime($meeting->getEnd()->getDateTime());
-                }
-            }
-        }
-        $data->creator_id = (isset($data->creator_id)) ? $data->creator_id : $USER->id;
-
-        $data->id = $data->instance;
-        teams_set_events($data); // Create meeting events if defined.
-
-        $DB->update_record('teams', $data);
-
-        return true;
+        $meetingid = $team->resource_teams_id;
+        $resp = $api->apicall('PATCH', "/users/{$o365user->objectid}/onlineMeetings/{$meetingid}", json_encode($meetingdata));
+        $result = $api->process_apicall_response($resp, [
+            'id' => null,
+            'startDateTime' => null,
+            'endDateTime' => null,
+            'joinWebUrl' => null,
+        ]);
     }
 
-    return false;
+    $data->id = $data->instance;
+    $DB->update_record('teams', $data);
+
+    // Update the calendar events.
+    teams_set_events($data);
+
+    return true;
 }
 
 /**
@@ -450,10 +422,9 @@ function get_office()
 }
 
 /**
- * Add calendar events if startdate or/and closedate are enabled for the online meeting.
- * @param $team the team.
- * @throws coding_exception
- * @throws dml_exception
+ * Add calendar events for the meeting.
+ *
+ * @param $team The team data.
  */
 function teams_set_events($team) {
     global $DB;
@@ -465,8 +436,14 @@ function teams_set_events($team) {
         }
     }
 
+    // We do not create events when we're missing an open or close date.
+    if (!$team->opendate || !$team->closedate) {
+        return;
+    }
+
     // The open-event.
     $event = new stdClass;
+    $event->name = $team->name;
     $event->description = $team->name;
     $event->courseid = $team->course;
     $event->groupid = 0;
@@ -477,26 +454,7 @@ function teams_set_events($team) {
     $event->timestart = $team->opendate;
     $event->visible = instance_is_visible('teams', $team);
     $event->timeduration = ($team->closedate - $team->opendate);
-
-    if ($team->closedate && $team->opendate && $event->timeduration > 0) {
-        // Single event for the whole questionnaire.
-        $event->name = $team->name;
-        calendar_event::create($event);
-    } else {
-        // Separate start and end events.
-        $event->timeduration  = 0;
-        if ($team->opendate) {
-            $event->name = $team->name . get_string('opendate_session', 'mod_teams');
-            calendar_event::create($event);
-            unset($event->id); // So we can use the same object for the close event.
-        }
-        if ($team->closedate) {
-            $event->name = $team->name . get_string('closedate_session', 'mod_teams');
-            $event->timestart = $team->closedate;
-            $event->eventtype = 'close';
-            calendar_event::create($event);
-        }
-    }
+    calendar_event::create($event);
 }
 
 /**

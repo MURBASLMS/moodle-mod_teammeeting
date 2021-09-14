@@ -65,10 +65,10 @@ $string['enrol_managers'] = 'Enrol all course managers as team owners';
 $string['enrol_managers_help'] = 'If enable all users with the "manager" role will be add to the team as owner and will have administration rights on it.<br/>
                                            If don\'t, you, as creator of the team, will be the only owner of this team.';
 $string['opendate'] = 'Start date of the meeting';
-$string['opendate_help'] = 'Start date of the meeting. If this option is not selected the meeting will be avalaible since its creation.';
+$string['opendate_help'] = 'The meeting will be set to start at this particular point in time.';
 $string['opendate_session'] = ' (Teams session start)';
 $string['closedate'] = 'Closing date of the meeting';
-$string['closedate_help'] = 'Closing date of the resource. If this option is not selected the meeting will be avalaible until another action from one of the organizers.';
+$string['closedate_help'] = 'If left blank, the default duration of the meeting will apply.';
 $string['closedate_session'] = ' (Teams session end)';
 $string['dates_help'] = '<div class="alert alert-info"><strong>Be careful, students and other course users will not receive email notifications for participate tothis meeting.</strong>
                                     <ul><li>One shot meeting: <ul><li>The meeting will only be displayed on its creator Teams calendar. Students see this meeting on the course section where it has been added, on the "Upcoming events" course block and the Moodle calender (think to add theses blocks if needed).</li>
@@ -90,7 +90,13 @@ $string['meetingnotavailable'] = 'Access to this meeting (virtual classroom) is 
 $string['meetingavailable'] = 'Teams online meeting is available %s.';
 $string['description'] = 'Team created for the course "%s".';
 $string['copy_link'] = 'Copy the resource link to the keyboard';
-$string['create_mail_content'] = 'Hello,\nYou have just created the Teams online meeting "%s" on your Moodle course "%s".\nYou can find this meeting by clicking on this link : ';
+$string['create_mail_content'] = 'Hello,
+
+You have just created the Teams online meeting "{$a->name}" in your course "{$a->course}".
+
+You can find this meeting by clicking on this link:
+[{$a->url}]
+';
 $string['create_mail_title'] = 'New Teams online meeting created';
 $string['messageprovider:meetingconfirm'] = 'Confirmation of the Teams online meeting creation';
 $string['notif_mail'] = 'Online meeting creation notification';
@@ -106,10 +112,12 @@ $string['owners_others'] = 'Team creator + selected users';
 $string['owners_managers'] = 'This course managers';
 $string['other_owners'] = 'Select some other users as this team owner';
 $string['other_owners_help'] = 'Select here the other user you want to give owner and adminisrations rights on this team.';
-$string['reuse_meeting'] = 'Utilisation ?';
-$string['reuse_meeting_help'] = 'Meeting utilisation:
-                                <ul><li>Reusable: the generated meeting url will be accessible by enrolled users since its creation (unless you defines moodle access restrictions).</li>
-                                <li>One shot: the meeting url is immediatly available for its creator. For other users Moodle will test its availability compared to the period defined in the form before doing the redirection to the meeting.</li></ul>';
+$string['reuse_meeting'] = 'Meeting time';
+$string['reuse_meeting_help'] = 'The meeting time defines whether the meeting is limited to a time slot, or is available permanently.
+
+- **Permanent**: The meeting URL will be accessible to whoever can access this activity from the course page.</li>
+- **One shot**: The meeting URL is always available to its creator. For anybody else, the meeting will only be available within the given time frame.
+';
 $string['reuse_meeting_no'] = 'One shot';
 $string['reuse_meeting_yes'] = 'Permanent';
 $string['meeting_default_duration'] = 'Default duration for the meetings';
@@ -117,3 +125,6 @@ $string['meeting_default_duration_help'] = 'The default duration to set for the 
 
 $string['gotoresource'] = 'Go to the Teams resource';
 $string['title_courseurl'] = 'Return to the course';
+$string['apinotconfigured'] = 'The Microsoft API needs to be configured and enabled in the plugin local_o365. Note that this is incomptaible with the legacy API.';
+$string['noto365user'] = 'Not an O365 user. Has the user linked, or logged in with, their Microsoft 365 account?';
+$string['noto365usercurrent'] = 'Missing permissions. You must link, or login with, your Microsoft 365 account to continue.';
