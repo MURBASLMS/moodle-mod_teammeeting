@@ -27,7 +27,6 @@ use mod_teams\manager;
 
 defined('MOODLE_INTERNAL') || die;
 
-require_once($CFG->dirroot . '/mod/teams/classes/Office365.php');
 require_once($CFG->dirroot . '/calendar/lib.php');
 require_once($CFG->libdir . '/resourcelib.php');
 
