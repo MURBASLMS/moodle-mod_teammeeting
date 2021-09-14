@@ -112,8 +112,8 @@ $string['reuse_meeting_help'] = 'Meeting utilisation:
                                 <li>One shot: the meeting url is immediatly available for its creator. For other users Moodle will test its availability compared to the period defined in the form before doing the redirection to the meeting.</li></ul>';
 $string['reuse_meeting_no'] = 'One shot';
 $string['reuse_meeting_yes'] = 'Permanent';
-$string['meeting_default_duration'] = 'Default duration for the meetings if a closedate is not given';
-$string['meeting_default_duration_help'] = 'Default duration  for the meetings created with Teams activit if a close is not given. This closedate will be deducted from the startdate and this selected duration.';
+$string['meeting_default_duration'] = 'Default duration for the meetings';
+$string['meeting_default_duration_help'] = 'The default duration to set for the meeting when a close date is not specified.';
 
 $string['gotoresource'] = 'Go to the Teams resource';
 $string['title_courseurl'] = 'Return to the course';

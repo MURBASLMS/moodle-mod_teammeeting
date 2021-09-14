@@ -53,6 +53,8 @@ function xmldb_teams_upgrade($oldversion) {
         if (!$dbman->index_exists($table, $index)) {
             $dbman->add_index($table, $index);
         }
+
+        upgrade_mod_savepoint(true, 2020052600, 'teams');
     }
 
     if ($oldversion < 2020091200) {
@@ -69,6 +71,8 @@ function xmldb_teams_upgrade($oldversion) {
         if (!$dbman->field_exists($table, $closedate)) {
             $dbman->add_field($table, $closedate);
         }
+
+        upgrade_mod_savepoint(true, 2020091200, 'teams');
     }
 
     if ($oldversion < 2020101301) {
@@ -84,6 +88,8 @@ function xmldb_teams_upgrade($oldversion) {
         if ($dbman->field_exists($table, $team_id)) {
             $dbman->rename_field($table, $team_id, 'resource_teams_id');
         }
+
+        upgrade_mod_savepoint(true, 2020101301, 'teams');
     }
 
     if ($oldversion < 2021011205) {
@@ -94,6 +100,8 @@ function xmldb_teams_upgrade($oldversion) {
         if (!$dbman->field_exists($table, $reuse)) {
             $dbman->add_field($table, $reuse);
         }
+
+        upgrade_mod_savepoint(true, 2021011205, 'teams');
     }
 
     if ($oldversion < 2021020800) {
@@ -104,6 +112,25 @@ function xmldb_teams_upgrade($oldversion) {
         if (!$dbman->field_exists($table, $owners)) {
             $dbman->add_field($table, $owners);
         }
+
+        upgrade_mod_savepoint(true, 2021020800, 'teams');
+    }
+
+    if ($oldversion < 2021091400) {
+
+        // Convert the duration setting to a number of seconds.
+        $seconds = 3600 * 2;
+        $duration = get_config('mod_teams', 'meeting_default_duration');
+        if ($duration === '+30 minutes') {
+            $seconds = 1800;
+        } else if ($duration === '+1 hour') {
+            $seconds = 3600;
+        } else if ($duration === '+3 hours') {
+            $seconds = 3600 * 3;
+        }
+        set_config('meeting_default_duration', $seconds, 'mod_teams');
+
+        upgrade_mod_savepoint(true, 2021091400, 'teams');
     }
 
     return true;
