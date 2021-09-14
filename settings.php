@@ -24,31 +24,6 @@
 defined('MOODLE_INTERNAL') || die;
 
 if ($ADMIN->fulltree) {
-    $settings->add(new admin_setting_configtext('mod_teams/client_id',
-        'Application (client) ID',
-        'Application (client) ID',
-        ''
-    ));
-    $settings->add(new admin_setting_configtext('mod_teams/tenant_id',
-        'Directory (tenant) ID',
-        'Directory (tenant) ID',
-        ''
-    ));
-    $settings->add(new admin_setting_configtext('mod_teams/client_secret',
-        'Application (client) secret',
-        'Application (client) secret',
-        ''
-    ));
-    $settings->add(new admin_setting_configtext('mod_teams/team_model',
-        'ID Teams modèle',
-        'ID Teams modèle',
-        ''
-    ));
-    $settings->add(new admin_setting_configcheckbox('mod_teams/use_prefix',
-        get_string('use_prefix', 'mod_teams'),
-        get_string('use_prefix_help', 'mod_teams'),
-        0
-    ));
     $settings->add(new admin_setting_configcheckbox('mod_teams/notif_mail',
         get_string('notif_mail', 'mod_teams'),
         get_string('notif_mail_help', 'mod_teams'),

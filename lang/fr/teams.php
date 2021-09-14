@@ -31,8 +31,6 @@ $string['pluginadministration'] = 'Ressource Teams';
 $string['teams:addinstance'] = 'Ajouter une ressource Teams';
 $string['teams:view'] = 'Visualiser une ressource Teams';
 $string['privacy:metadata'] = 'Le module Ressource Teams ne stocke aucune donnée personnelle.';
-$string['use_prefix'] = 'Utiliser un préfixe dans le nom de la ressource';
-$string['use_prefix_help'] = 'Si cette case est cochée un préfixe du type "[TYPE]" sera ajouté au nom de la ressource pour identifier le type de la ressource (équipe, réunion...).';
 $string['notunique'] = 'L\'adresse email n\'est pas unique dans l\'Active Directory Azure.';
 $string['notfound'] = 'L\'adresse email n\'a pas pu être reliée à un utilisateur dans l\'Active Directory Azure.';
 
@@ -46,7 +44,7 @@ $string['teamserror'] = '<p>Il semblerait qu\'une erreur se soit produite lors d
                                 <p>Retentez l\'opération, si le souci persiste, contactez le support.</p>';
 $string['back'] = 'Revenir au cours';
 $string['type'] = 'Type de ressource Teams à créer';
-$string['type_help'] = 'Type de ressource Teams à créer: 
+$string['type_help'] = 'Type de ressource Teams à créer:
                                     <ul><li>Equipe Teams: vous permet de créer une équipe dans Teams que vous pourrez gérer à votre guise (ajouts de canaux...) et avec les membres du cours que vous aurez sélectionné.</li>
                                     <li>Réunion Teams (Classe virtuelle): vous permet de créer directement une réunion Teams (ou classe virtuelle) que pourront rejoindre les utilisateurs cliquant sur le lien de l\'activité moodle.</li></ul>';
 $string['team'] = 'Equipe Teams<br/>';

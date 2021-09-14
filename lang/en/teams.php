@@ -31,8 +31,6 @@ $string['pluginadministration'] = 'Teams Resource';
 $string['teams:addinstance'] = 'Add a Teams Resource';
 $string['teams:view'] = 'View a Teams Resource';
 $string['privacy:metadata'] = 'Teams Resource plugin does not store or transmit any personal data.';
-$string['use_prefix'] = 'Use prefix in the resource name';
-$string['use_prefix_help'] = 'If checked a prefix like "[TYPE]" will be use in the resource name to identify its type (team, online meeting...).';
 $string['notunique'] = 'The email is not unique in Azure Active Directory.';
 $string['notfound'] = 'Email not found in Azure Active Directory.';
 
@@ -46,7 +44,7 @@ $string['teamserror'] = '<p>It seems an error occured during your team creation:
                                 <p>Please retry this operation and contact the support if this problem persists.</p>';
 $string['back'] = 'Return to course';
 $string['type'] = 'Teams resource type to create';
-$string['type_help'] = 'Teams resource type to create: 
+$string['type_help'] = 'Teams resource type to create:
                             <ul><li>Team: create a team you will manage (add channels...) with members you selected in the course. </li>
                             <li>Online meeting (virtual classroom): create immediatly a meeting (or virtual classroom) users will be able to join by clicking on the resource link.</li></ul>';
 $string['team'] = 'Team<br/>';

@@ -362,6 +362,7 @@ class Office365
             $response = $this->addOwner($current, $group, false);
             if ($response && $response->getStatus() == 204) {
                 // Ok.
+                // TODO Do not use config.
                 if (get_config('mod_teams', 'team_model')) {
                     // If we use model team -> delete owners of this model team in the given team.
                     $this->deleteModelOwners($group, false, $current);
@@ -414,6 +415,7 @@ class Office365
         $graph = $this->getGraphApi();
 
         try {
+            // TODO Do not use config.
             $response = $graph->createRequest("GET", "/groups/" . get_config('mod_teams', 'team_model') . "/owners")
                 ->execute();
             $model_owners = [];

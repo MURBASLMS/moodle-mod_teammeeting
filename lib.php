@@ -65,7 +65,7 @@ function teams_add_instance($data, $mform) {
         $data->display = RESOURCELIB_DISPLAY_NEW;
         $data->displayoptions = serialize($displayoptions);
         $given_name = $data->name;
-        $data->name = (get_config('mod_teams', 'use_prefix') == true) ? get_string($data->type . '_prefix', 'mod_teams') . $data->name : $given_name;
+        $data->name = $given_name;
         $data->intro = $data->intro;
         $data->introformat = "1";
         $data->timemodified = time();
@@ -191,7 +191,7 @@ function teams_update_instance($data, $mform) {
         $data->display = RESOURCELIB_DISPLAY_NEW;
         $data->displayoptions = serialize($displayoptions);
         $given_name = $data->name;
-        $data->name = (get_config('mod_teams', 'use_prefix') == true) ? get_string($data->type . '_prefix', 'mod_teams') . $data->name : $given_name;
+        $data->name = $given_name;
         $data->intro = $data->intro;
         $data->introformat = "1";
         $data->timemodified = time();
@@ -445,6 +445,7 @@ function teams_is_owner($team, $user)
  */
 function get_office()
 {
+    // TODO Do not use config.
     return new Office365(get_config('mod_teams', 'tenant_id'), get_config('mod_teams', 'client_id'), get_config('mod_teams', 'client_secret'));
 }
 
