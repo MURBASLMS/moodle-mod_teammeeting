@@ -1,6 +1,11 @@
 Changelog
 =========
 
+v1.0.1
+------
+
+- Time slot meetings no longer create broadcast events
+
 v1.0.0
 ------
 
