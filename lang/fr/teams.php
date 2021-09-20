@@ -90,7 +90,7 @@ $string['meetingnotfound'] = 'L\'accès à cette réunion semble impossible. Un 
 $string['meetingnotavailable'] = 'L\'accès à cette réunion (classe virtuelle) n\'est actuellement pas disponible.%s En cas de difficultés, contactez directement votre enseignant(e).';
 $string['description'] = 'Equipe créée dans le cadre du cours "%s".';
 $string['meetingavailable'] = ' La réunion Teams est disponible %s.';
-$string['copy_link'] = 'Copier le lien dans le presse-papier';
+$string['copylink'] = 'Copier le lien dans le presse-papier';
 $string['create_mail_content'] = 'Bonjour,\nVous venez de créer la réunion Teams "%s" depuis votre cours moodle "%s".\nRetrouvez celle-ci en cliquant sur le lien ci-après : ';
 $string['create_mail_title'] = 'Création de votre réunion Teams';
 $string['messageprovider:meetingconfirm'] = 'Confirmation de la création de réunion Teams';
@@ -114,4 +114,4 @@ $string['meeting_default_duration'] = 'Durée par défaut de la réunion si une 
 $string['meeting_default_duration_help'] = 'Permet de renseigner une durée par défaut pour les réunions crées via le module si une date de fin n\'est pas renseignée. La date de fin par défaut sera calculée par rapport à la date de début rénseignée et en ajoutant cette durée.';
 
 $string['gotoresource'] = 'Accéder à la ressource Teams';
-$string['title_courseurl'] = 'Revenir au cours';
+$string['returntocourse'] = 'Revenir au cours';

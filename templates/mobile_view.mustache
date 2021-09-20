@@ -30,20 +30,16 @@
     * teams - [object]
     * teams.id - [int] Subcourse instance ID.
     * teams.intro - [string] Formatted activity description.
-    * hasprogress - [bool] Is the progress value set (not null).
-    * progress - [float] Percentual value of the progress in the referenced course.
-    * warning - [string] Warning to be displayed to the user.
+    * details - [string] Details to be displayed to the user.
 
     Example context (json): @todo change example
     {
         "cmid": 42,
         "teams": {
             "id": 24,
-            "intro": "<h3>Teams UCA activity description</h3>"
+            "intro": "<h3>Activity description</h3>"
         },
-        "hasprogress": true,
-        "progress": 100,
-        "warning": ""
+        "details": ""
     }
 }}
 
@@ -70,7 +66,7 @@
             <ion-item>
                 <button ion-button block core-link capture="true" href="<% defaulturl %>">
                     <ion-icon name="link" role="img" start class="icon icon-md ion-md-link" aria-label="link" style="padding-right: .3em;"></ion-icon>
-                    {{ 'plugin.mod_teams.title_courseurl' | translate }}
+                    {{ 'plugin.mod_teams.returntocourse' | translate }}
                 </button>
             </ion-item>
         <%/ gotoresource %>

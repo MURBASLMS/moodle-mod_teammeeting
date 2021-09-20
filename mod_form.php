@@ -73,10 +73,9 @@ class mod_teams_mod_form extends moodleform_mod {
         $mform->setType('type', PARAM_ALPHANUM);
         $mform->setConstant('type', $isedit ? $this->current->type : manager::TYPE_MEETING);
 
-        $mform->addElement('text', 'name', get_string('name', 'mod_teams'), 'size=80');
-        $mform->addRule('name', null, 'required', null, 'client');
+        $mform->addElement('text', 'name', get_string('name', 'core'), ['size' => '64']);
+        $mform->addRule('name', get_string('maximumchars', 'core', 255), 'maxlength', 255, 'client');
         $mform->setType('name', PARAM_TEXT);
-        $mform->addHelpButton('name', 'name', 'mod_teams');
 
         $this->standard_intro_elements();
 
