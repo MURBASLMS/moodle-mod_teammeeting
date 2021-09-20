@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -16,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Mandatory public API of teams module.
+ * Plugin API.
  *
  * @package    mod_teams
  * @copyright  2020 Université Clermont Auvergne
@@ -28,25 +27,35 @@ use mod_teams\manager;
 defined('MOODLE_INTERNAL') || die;
 
 require_once($CFG->dirroot . '/calendar/lib.php');
-require_once($CFG->libdir . '/resourcelib.php');
 
 /**
- * List of features supported in Folder module
- * @param string $feature FEATURE_xx constant for requested feature
- * @return mixed True if module supports feature, false if not, null if doesn't know
+ * Supported features.
+ *
+ * @param string $feature FEATURE_xx constant for requested feature.
+ * @return mixed True or false, null when unknown.
  */
 function teams_supports($feature) {
-    switch($feature) {
-        case FEATURE_MOD_ARCHETYPE:           return MOD_ARCHETYPE_RESOURCE;
-        case FEATURE_GROUPS:                  return false;
-        case FEATURE_GROUPINGS:               return false;
-        case FEATURE_MOD_INTRO:               return true;
-        case FEATURE_COMPLETION_TRACKS_VIEWS: return true;
-        case FEATURE_GRADE_HAS_GRADE:         return false;
-        case FEATURE_GRADE_OUTCOMES:          return false;
-        case FEATURE_BACKUP_MOODLE2:          return true;
-        case FEATURE_SHOW_DESCRIPTION:        return true;
-        default: return null;
+    switch ($feature) {
+        case FEATURE_MOD_ARCHETYPE:
+            return MOD_ARCHETYPE_RESOURCE;
+        case FEATURE_GROUPS:
+            return false;
+        case FEATURE_GROUPINGS:
+            return false;
+        case FEATURE_MOD_INTRO:
+            return true;
+        case FEATURE_COMPLETION_TRACKS_VIEWS:
+            return true;
+        case FEATURE_GRADE_HAS_GRADE:
+            return false;
+        case FEATURE_GRADE_OUTCOMES:
+            return false;
+        case FEATURE_BACKUP_MOODLE2:
+            return true;
+        case FEATURE_SHOW_DESCRIPTION:
+            return true;
+        default:
+            return null;
     }
 }
 
@@ -55,7 +64,7 @@ function teams_supports($feature) {
  *
  * @param object $data The form data.
  * @param object $mform The form.
- * @return int The new teams instance id.
+ * @return int The new instance ID.
  */
 function teams_add_instance($data, $mform) {
     global $DB, $USER, $COURSE;
@@ -128,7 +137,7 @@ function teams_add_instance($data, $mform) {
  *
  * @param object $data the form data.
  * @param object $mform the form.
- * @return bool true if update ok and false in other cases.
+ * @return bool Whether the update was successful.
  */
 function teams_update_instance($data, $mform) {
     global $DB, $COURSE;
@@ -247,7 +256,7 @@ function teams_get_coursemodule_info($coursemodule) {
 /**
  * Add calendar events for the meeting.
  *
- * @param $team The team data.
+ * @param object $team The team data.
  */
 function teams_set_events($team) {
     global $DB;
@@ -286,7 +295,6 @@ function teams_set_events($team) {
  * @param object $team The teams instance.
  * @param string $format The format ('html' by default, 'text' can be used for notification).
  * @return string The information about the meeting.
- * @throws coding_exception
  */
 function teams_print_details_dates($team, $format = 'html') {
     global $OUTPUT;

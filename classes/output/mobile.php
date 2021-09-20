@@ -74,7 +74,6 @@ class mobile {
             }
         }
 
-
         $defaulturl = new \moodle_url('/course/view.php', array('id' => $course->id));
         $defaulturl = $defaulturl->out();
 

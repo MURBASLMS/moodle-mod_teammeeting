@@ -56,22 +56,22 @@ class backup_teams_activity_task extends backup_activity_task {
      * @param string $content Some HTML text.
      * @return string The content.
      */
-    static public function encode_content_links($content) {
+    public static function encode_content_links($content) {
         global $CFG;
 
-        $base = preg_quote($CFG->wwwroot.'/mod/teams','#');
+        $base = preg_quote($CFG->wwwroot . '/mod/teams', '#');
 
-        //Access a list of all links in a course
+        // Access a list of all links in a course.
         $pattern = '#('.$base.'/index\.php\?id=)([0-9]+)#';
         $replacement = '$@TEAMSINDEX*$2@$';
         $content = preg_replace($pattern, $replacement, $content);
 
-        //Access the link supplying a course module id
+        // Access the link supplying a course module ID.
         $pattern = '#('.$base.'/view\.php\?id=)([0-9]+)#';
         $replacement = '$@TEAMSVIEWBYID*$2@$';
         $content = preg_replace($pattern, $replacement, $content);
 
-        //Access the link supplying an instance id
+        // Access the link supplying an instance ID.
         $pattern = '#('.$base.'/view\.php\?u=)([0-9]+)#';
         $replacement = '$@TEAMSVIEWBYU*$2@$';
         $content = preg_replace($pattern, $replacement, $content);

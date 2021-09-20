@@ -24,9 +24,9 @@
 defined('MOODLE_INTERNAL') || die;
 
 if ($ADMIN->fulltree) {
-    $settings->add(new admin_setting_configduration('mod_teams/meeting_default_duration',
-        get_string('meeting_default_duration', 'mod_teams'),
-        get_string('meeting_default_duration_help', 'mod_teams') ,
+    $settings->add(new admin_setting_configduration('mod_teams/meetingdefaultduration',
+        get_string('meetingdefaultduration', 'mod_teams'),
+        get_string('meetingdefaultduration_help', 'mod_teams') ,
         2 * HOURSECS,
         HOURSECS
     ));

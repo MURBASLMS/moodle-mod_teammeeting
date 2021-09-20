@@ -53,7 +53,7 @@ class restore_teams_activity_task extends restore_activity_task {
     /**
      * Define the contents that must be decoded.
      */
-    static public function define_decode_contents() {
+    public static function define_decode_contents() {
         $contents = [];
         $contents[] = new restore_decode_content('teams', array('intro'), 'teams');
         return $contents;
@@ -62,7 +62,7 @@ class restore_teams_activity_task extends restore_activity_task {
     /**
      * Decode link rules.
      */
-    static public function define_decode_rules() {
+    public static function define_decode_rules() {
         $rules = [];
 
         $rules[] = new restore_decode_rule('TEAMSINDEX', '/mod/teams/index.php?id=$1', 'course');
@@ -76,14 +76,14 @@ class restore_teams_activity_task extends restore_activity_task {
     /**
      * Define the restore log rules.
      */
-    static public function define_restore_log_rules() {
+    public static function define_restore_log_rules() {
         return [];
     }
 
     /**
      * Define the restore log rules for course.
      */
-    static public function define_restore_log_rules_for_course() {
+    public static function define_restore_log_rules_for_course() {
         return [];
     }
 

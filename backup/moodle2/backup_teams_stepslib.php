@@ -35,6 +35,9 @@ defined('MOODLE_INTERNAL') || die();
  */
 class backup_teams_activity_structure_step extends backup_activity_structure_step {
 
+    /**
+     * Define structure.
+     */
     protected function define_structure() {
 
         // Define each element separated.

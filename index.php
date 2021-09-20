@@ -15,10 +15,11 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Displays information about all the modules in the requested course.
+ * Index page.
  *
  * @package   mod_teams
  * @copyright 2021 Université Clermont Auvergne
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 require_once(__DIR__ . '/../../config.php');

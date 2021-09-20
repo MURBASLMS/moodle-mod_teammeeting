@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Declares the Mobile App addons provided by this plugin.
+ * Mobile.
  *
  * @package     mod_teams
  * @copyright   2021 Anthony Durif, Université Clermont Auvergne

@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -16,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Teams configuration form.
+ * Module form.
  *
  * @package   mod_teams
  * @copyright 2020 Université Clermont Auvergne
@@ -28,11 +27,11 @@ use mod_teams\manager;
 
 defined('MOODLE_INTERNAL') || die;
 
-require_once ($CFG->dirroot.'/course/moodleform_mod.php');
-require_once($CFG->dirroot.'/mod/teams/lib.php');
+require_once($CFG->dirroot . '/course/moodleform_mod.php');
+require_once($CFG->dirroot . '/mod/teams/lib.php');
 
 /**
- * Teams configuration form.
+ * Module form.
  *
  * @package   mod_teams
  * @copyright 2020 Université Clermont Auvergne
@@ -43,7 +42,7 @@ class mod_teams_mod_form extends moodleform_mod {
     /**
      * Form construction.
      */
-    function definition() {
+    public function definition() {
         global $USER, $OUTPUT;
         $mform = $this->_form;
 
@@ -76,8 +75,8 @@ class mod_teams_mod_form extends moodleform_mod {
         $this->standard_intro_elements();
 
         $mform->addElement('select', 'reusemeeting', get_string('reusemeeting', 'mod_teams'), [
-            1 => get_string('reusemeeting_yes', 'mod_teams'),
-            0 => get_string('reusemeeting_no', 'mod_teams'),
+            1 => get_string('reusemeetingyes', 'mod_teams'),
+            0 => get_string('reusemeetingno', 'mod_teams'),
         ]);
         $mform->addHelpButton('reusemeeting', 'reusemeeting', 'mod_teams');
         $mform->setDefault('reusemeeting', 1);
@@ -92,7 +91,7 @@ class mod_teams_mod_form extends moodleform_mod {
 
         // The date selectors.
         $tz = core_date::get_user_timezone_object();
-        $defaultduration = (int) get_config('mod_teams', 'meeting_default_duration');
+        $defaultduration = (int) get_config('mod_teams', 'meetingdefaultduration');
         $nowplusone = (new DateTimeImmutable('now', $tz))->add(new DateInterval('PT1H'));
         $defaultopen = $nowplusone->setTime($nowplusone->format('H'), 0, 0, 0);
         $defaultclose = $defaultopen->add(new DateInterval("PT{$defaultduration}S"));
@@ -159,7 +158,7 @@ class mod_teams_mod_form extends moodleform_mod {
         parent::data_postprocessing($data);
 
         $ispermanent = !empty($data->reusemeeting);
-        $defaultduration = (int) get_config('mod_teams', 'meeting_default_duration');
+        $defaultduration = (int) get_config('mod_teams', 'meetingdefaultduration');
 
         if (!empty($data->completionunlocked)) {
             $autocompletion = !empty($data->completion) && $data->completion == COMPLETION_TRACKING_AUTOMATIC;

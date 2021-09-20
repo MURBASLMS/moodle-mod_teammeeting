@@ -35,6 +35,9 @@ defined('MOODLE_INTERNAL') || die();
  */
 class restore_teams_activity_structure_step extends restore_activity_structure_step {
 
+    /**
+     * Define structure.
+     */
     protected function define_structure() {
         $paths = [
             new restore_path_element('teams', '/activity/teams')
@@ -44,6 +47,11 @@ class restore_teams_activity_structure_step extends restore_activity_structure_s
         return $this->prepare_activity_structure($paths);
     }
 
+    /**
+     * Process element.
+     *
+     * @param array $data The data.
+     */
     protected function process_teams($data) {
         global $DB;
 
@@ -57,6 +65,9 @@ class restore_teams_activity_structure_step extends restore_activity_structure_s
         $this->apply_activity_instance($newitemid);
     }
 
+    /**
+     * After execute.
+     */
     protected function after_execute() {
         $this->add_related_files('mod_teams', 'intro', null);
     }
