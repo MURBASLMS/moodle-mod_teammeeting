@@ -17,8 +17,8 @@
 /**
  * Restore steps.
  *
- * @package    mod_teams
- * @copyright  2021 Frédéric Massart
+ * @package    mod_teammeeting
+ * @copyright  2021 Murdoch University
  * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -28,19 +28,19 @@ defined('MOODLE_INTERNAL') || die();
 /**
  * Restore steps.
  *
- * @package    mod_teams
- * @copyright  2021 Frédéric Massart
+ * @package    mod_teammeeting
+ * @copyright  2021 Murdoch University
  * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class restore_teams_activity_structure_step extends restore_activity_structure_step {
+class restore_teammeeting_activity_structure_step extends restore_activity_structure_step {
 
     /**
      * Define structure.
      */
     protected function define_structure() {
         $paths = [
-            new restore_path_element('teams', '/activity/teams')
+            new restore_path_element('teammeeting', '/activity/teammeeting')
         ];
 
         // Return the paths wrapped into standard activity structure.
@@ -52,7 +52,7 @@ class restore_teams_activity_structure_step extends restore_activity_structure_s
      *
      * @param array $data The data.
      */
-    protected function process_teams($data) {
+    protected function process_teammeeting($data) {
         global $DB;
 
         $data = (object) $data;
@@ -60,7 +60,7 @@ class restore_teams_activity_structure_step extends restore_activity_structure_s
         $data->course = $this->get_courseid();
 
         // Insert the new record.
-        $newitemid = $DB->insert_record('teams', $data);
+        $newitemid = $DB->insert_record('teammeeting', $data);
 
         $this->apply_activity_instance($newitemid);
     }
@@ -69,6 +69,6 @@ class restore_teams_activity_structure_step extends restore_activity_structure_s
      * After execute.
      */
     protected function after_execute() {
-        $this->add_related_files('mod_teams', 'intro', null);
+        $this->add_related_files('mod_teammeeting', 'intro', null);
     }
 }

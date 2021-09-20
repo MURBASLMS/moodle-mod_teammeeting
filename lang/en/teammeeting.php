@@ -17,7 +17,7 @@
 /**
  * Language strings.
  *
- * @package   mod_teams
+ * @package   mod_teammeeting
  * @copyright 2020 Université Clermont Auvergne
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -38,14 +38,14 @@ $string['meetingdefaultduration'] = 'Default duration for the meetings';
 $string['meetingavailablebetween'] = 'The online meeting is available between {$a->from} and {$a->to}.';
 $string['meetingnotavailable'] = 'Access to this meeting is not available. {$a} In case of difficulties please contact your course manager(s).';
 $string['modulename_help'] = 'This module creates online meetings with Microsoft Teams.';
-$string['modulename'] = 'Teams';
-$string['modulenameplural'] = 'Teams';
+$string['modulename'] = 'Team meeting';
+$string['modulenameplural'] = 'Team meetings';
 $string['noto365user'] = 'Not an O365 user. Has the user linked, or logged in with, their Microsoft 365 account?';
 $string['noto365usercurrent'] = 'Missing permissions. You must link, or login with, your Microsoft 365 account to continue.';
 $string['opendate_help'] = 'The meeting will be set to start at this particular point in time.';
 $string['opendate'] = 'Start date of the meeting';
-$string['pluginadministration'] = 'Teams administrations';
-$string['pluginname'] = 'Teams';
+$string['pluginadministration'] = 'Team meeting administrations';
+$string['pluginname'] = 'Team meeting';
 $string['privacy:metadata'] = 'The plugin does not store or transmit any personal data.';
 $string['returntocourse'] = 'Return to the course';
 $string['reusemeeting_help'] = 'The meeting time defines whether the meeting is limited to a time slot, or is available permanently.
@@ -56,5 +56,5 @@ $string['reusemeeting_help'] = 'The meeting time defines whether the meeting is 
 $string['reusemeetingno'] = 'Time slot';
 $string['reusemeetingyes'] = 'Open ended';
 $string['reusemeeting'] = 'Meeting time';
-$string['teams:addinstance'] = 'Add a Teams instance';
-$string['teams:view'] = 'View a Teams instance';
+$string['teammeeting:addinstance'] = 'Add a Team meeting instance';
+$string['teammeeting:view'] = 'View a Team meeting instance';

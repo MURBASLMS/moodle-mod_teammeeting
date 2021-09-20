@@ -17,21 +17,21 @@
 /**
  * Event.
  *
- * @package    mod_teams
- * @copyright  2021 Frédéric Massart
+ * @package    mod_teammeeting
+ * @copyright  2021 Murdoch University
  * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_teams\event;
+namespace mod_teammeeting\event;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
  * Event.
  *
- * @package    mod_teams
- * @copyright  2021 Frédéric Massart
+ * @package    mod_teammeeting
+ * @copyright  2021 Murdoch University
  * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */

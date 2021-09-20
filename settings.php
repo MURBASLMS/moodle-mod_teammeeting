@@ -15,18 +15,18 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Settings for teams plugin.
+ * Settings.
  *
- * @package    mod_teams
+ * @package    mod_teammeeting
  * @copyright  2020 Université Clermont Auvergne
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 defined('MOODLE_INTERNAL') || die;
 
 if ($ADMIN->fulltree) {
-    $settings->add(new admin_setting_configduration('mod_teams/meetingdefaultduration',
-        get_string('meetingdefaultduration', 'mod_teams'),
-        get_string('meetingdefaultduration_help', 'mod_teams') ,
+    $settings->add(new admin_setting_configduration('mod_teammeeting/meetingdefaultduration',
+        get_string('meetingdefaultduration', 'mod_teammeeting'),
+        get_string('meetingdefaultduration_help', 'mod_teammeeting') ,
         2 * HOURSECS,
         HOURSECS
     ));

@@ -17,7 +17,7 @@
 /**
  * Mobile.
  *
- * @package     mod_teams
+ * @package     mod_teammeeting
  * @copyright   2021 Anthony Durif, Université Clermont Auvergne
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -25,11 +25,11 @@
 defined('MOODLE_INTERNAL') || die();
 
 $addons = [
-    'mod_teams' => [
+    'mod_teammeeting' => [
         'handlers' => [
             'courseteams' => [
                 'displaydata' => [
-                    'icon' => $CFG->wwwroot . '/mod/teams/pix/icon.png',
+                    'icon' => $CFG->wwwroot . '/mod/teammeeting/pix/icon.png',
                     'class' => '',
                 ],
 
@@ -38,9 +38,9 @@ $addons = [
             ],
         ],
         'lang' => [
-            ['pluginname', 'mod_teams'],
-            ['gotoresource', 'mod_teams'],
-            ['returntocourse', 'mod_teams'],
+            ['pluginname', 'mod_teammeeting'],
+            ['gotoresource', 'mod_teammeeting'],
+            ['returntocourse', 'mod_teammeeting'],
         ],
     ],
 ];

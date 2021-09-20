@@ -17,7 +17,7 @@
 /**
  * Capabilities.
  *
- * @package    mod_teams
+ * @package    mod_teammeeting
  * @copyright  2020 Université Clermont Auvergne
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -25,7 +25,7 @@
 defined('MOODLE_INTERNAL') || die;
 
 $capabilities = [
-    'mod/teams:view' => [
+    'mod/teammeeting:view' => [
         'captype' => 'read',
         'contextlevel' => CONTEXT_MODULE,
         'archetypes' => [
@@ -36,7 +36,7 @@ $capabilities = [
         ]
     ],
 
-    'mod/teams:addinstance' => [
+    'mod/teammeeting:addinstance' => [
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,
         'archetypes' => [

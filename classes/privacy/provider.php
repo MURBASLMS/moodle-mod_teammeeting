@@ -15,18 +15,18 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Privacy Subsystem implementation for mod_teams
+ * Privacy provider.
  *
- * @package    mod_teams
+ * @package    mod_teammeeting
  * @copyright  2020 Université Clermont Auvergne
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace mod_teams\privacy;
+namespace mod_teammeeting\privacy;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * The mod_teams module does not store any data.
+ * Privacy provider.
  *
  * @copyright  2020 Université Clermont Auvergne
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later

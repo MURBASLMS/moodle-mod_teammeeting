@@ -17,13 +17,13 @@
 /**
  * Manager.
  *
- * @package    mod_teams
- * @copyright  2021 Frédéric Massart
+ * @package    mod_teammeeting
+ * @copyright  2021 Murdoch University
  * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_teams;
+namespace mod_teammeeting;
 
 use local_o365\obj\o365user;
 use local_o365\rest\unified;
@@ -35,8 +35,8 @@ defined('MOODLE_INTERNAL') || die();
 /**
  * Manager.
  *
- * @package    mod_teams
- * @copyright  2021 Frédéric Massart
+ * @package    mod_teammeeting
+ * @copyright  2021 Murdoch University
  * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -97,7 +97,7 @@ class manager {
      */
     public function require_is_available() {
         if (!$this->is_available()) {
-            throw new moodle_exception('apinotconfigured', 'mod_teams');
+            throw new moodle_exception('apinotconfigured', 'mod_teammeeting');
         }
     }
 
@@ -109,7 +109,7 @@ class manager {
      */
     public function require_is_o365_user($userid) {
         if (!$this->is_o365_user($userid)) {
-            throw new moodle_exception('noto365user', 'mod_teams');
+            throw new moodle_exception('noto365user', 'mod_teammeeting');
         }
     }
 

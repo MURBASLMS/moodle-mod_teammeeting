@@ -12,7 +12,7 @@ Requirements
 Installation
 ------------
 
-1. Drop the content of this repository the folder `mod/teams`.
+1. Drop the content of this repository the folder `mod/teammeeting`.
 2. Navigate to the site administration to trigger the upgrade process.
 
 Microsoft 365 setup

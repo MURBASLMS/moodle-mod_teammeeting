@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="mod/teams/db" VERSION="20210920" COMMENT="XMLDB file for the resource teams module"
+<XMLDB PATH="mod/teammeeting/db" VERSION="20210920" COMMENT="XMLDB file for the resource teammeeting module"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
   <TABLES>
-    <TABLE NAME="teams" COMMENT="An instance of the module">
+    <TABLE NAME="teammeeting" COMMENT="An instance of the module">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="course" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>

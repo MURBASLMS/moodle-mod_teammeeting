@@ -15,20 +15,21 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * The mod_teams course module viewed event.
- * @package  mod_teams
+ * Course module viewed event.
+ *
+ * @package    mod_teammeeting
  * @copyright  2020 Université Clermont Auvergne
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later.
  */
 
-namespace mod_teams\event;
+namespace mod_teammeeting\event;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * The mod_teams course module viewed event class.
+ * Course module viewed event.
  *
- * @package    mod_teams
+ * @package    mod_teammeeting
  * @since      Moodle 3.8
  * @copyright  2020 Université Clermont Auvergne
  */
@@ -40,7 +41,7 @@ class course_module_viewed extends \core\event\course_module_viewed {
      * @return void
      */
     protected function init() {
-        $this->data['objecttable'] = 'teams';
+        $this->data['objecttable'] = 'teammeeting';
         $this->data['crud'] = 'r';
         $this->data['edulevel'] = self::LEVEL_PARTICIPATING;
     }

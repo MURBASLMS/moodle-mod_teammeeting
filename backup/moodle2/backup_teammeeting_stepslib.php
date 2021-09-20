@@ -17,8 +17,8 @@
 /**
  * Backup steps.
  *
- * @package    mod_teams
- * @copyright  2021 Frédéric Massart
+ * @package    mod_teammeeting
+ * @copyright  2021 Murdoch University
  * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -28,12 +28,12 @@ defined('MOODLE_INTERNAL') || die();
 /**
  * Backup steps.
  *
- * @package    mod_teams
- * @copyright  2021 Frédéric Massart
+ * @package    mod_teammeeting
+ * @copyright  2021 Murdoch University
  * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class backup_teams_activity_structure_step extends backup_activity_structure_step {
+class backup_teammeeting_activity_structure_step extends backup_activity_structure_step {
 
     /**
      * Define structure.
@@ -41,21 +41,21 @@ class backup_teams_activity_structure_step extends backup_activity_structure_ste
     protected function define_structure() {
 
         // Define each element separated.
-        $teams = new backup_nested_element('teams', ['id'], [
+        $teammeeting = new backup_nested_element('teammeeting', ['id'], [
             'name', 'intro', 'introformat', 'externalurl', 'opendate', 'closedate',
             'onlinemeetingid', 'creatorid', 'reusemeeting', 'timemodified'
         ]);
 
         // Define sources.
-        $teams->set_source_table('teams', array('id' => backup::VAR_ACTIVITYID));
+        $teammeeting->set_source_table('teammeeting', array('id' => backup::VAR_ACTIVITYID));
 
         // Define ID annotations.
-        $teams->annotate_ids('user', 'creatorid');
+        $teammeeting->annotate_ids('user', 'creatorid');
 
         // Define file annotations.
-        $teams->annotate_files('mod_teams', 'intro', null);
+        $teammeeting->annotate_files('mod_teammeeting', 'intro', null);
 
-        return $this->prepare_activity_structure($teams);
+        return $this->prepare_activity_structure($teammeeting);
     }
 
 }

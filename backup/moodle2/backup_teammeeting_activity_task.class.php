@@ -17,25 +17,25 @@
 /**
  * Backup task.
  *
- * @package    mod_teams
- * @copyright  2021 Frédéric Massart
+ * @package    mod_teammeeting
+ * @copyright  2021 Murdoch University
  * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once(__DIR__ . '/backup_teams_stepslib.php');
+require_once(__DIR__ . '/backup_teammeeting_stepslib.php');
 
 /**
  * Backup task.
  *
- * @package    mod_teams
- * @copyright  2021 Frédéric Massart
+ * @package    mod_teammeeting
+ * @copyright  2021 Murdoch University
  * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class backup_teams_activity_task extends backup_activity_task {
+class backup_teammeeting_activity_task extends backup_activity_task {
 
     /**
      * No specific settings for this activity.
@@ -47,7 +47,7 @@ class backup_teams_activity_task extends backup_activity_task {
      * Defines a backup step to store the instance data in the url.xml file
      */
     protected function define_my_steps() {
-        $this->add_step(new backup_teams_activity_structure_step('teams_structure', 'teams.xml'));
+        $this->add_step(new backup_teammeeting_activity_structure_step('teammeeting_structure', 'teammeeting.xml'));
     }
 
     /**
@@ -59,21 +59,21 @@ class backup_teams_activity_task extends backup_activity_task {
     public static function encode_content_links($content) {
         global $CFG;
 
-        $base = preg_quote($CFG->wwwroot . '/mod/teams', '#');
+        $base = preg_quote($CFG->wwwroot . '/mod/teammeeting', '#');
 
         // Access a list of all links in a course.
         $pattern = '#('.$base.'/index\.php\?id=)([0-9]+)#';
-        $replacement = '$@TEAMSINDEX*$2@$';
+        $replacement = '$@TEAMMEETINGINDEX*$2@$';
         $content = preg_replace($pattern, $replacement, $content);
 
         // Access the link supplying a course module ID.
         $pattern = '#('.$base.'/view\.php\?id=)([0-9]+)#';
-        $replacement = '$@TEAMSVIEWBYID*$2@$';
+        $replacement = '$@TEAMMEETINGVIEWBYID*$2@$';
         $content = preg_replace($pattern, $replacement, $content);
 
         // Access the link supplying an instance ID.
         $pattern = '#('.$base.'/view\.php\?u=)([0-9]+)#';
-        $replacement = '$@TEAMSVIEWBYU*$2@$';
+        $replacement = '$@TEAMMEETINGVIEWBYU*$2@$';
         $content = preg_replace($pattern, $replacement, $content);
 
         return $content;

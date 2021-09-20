@@ -17,7 +17,7 @@
 /**
  * Upgrade.
  *
- * @package    mod_teams
+ * @package    mod_teammeeting
  * @copyright  2021 Université Clermont Auvergne
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -30,7 +30,7 @@ defined('MOODLE_INTERNAL') || die();
  * @param int $oldversion The version we are upgrading from.
  * @return bool The result.
  */
-function xmldb_teams_upgrade($oldversion) {
+function xmldb_teammeeting_upgrade($oldversion) {
     global $DB;
 
     return true;

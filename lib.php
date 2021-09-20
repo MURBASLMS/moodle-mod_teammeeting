@@ -17,12 +17,12 @@
 /**
  * Plugin API.
  *
- * @package    mod_teams
+ * @package    mod_teammeeting
  * @copyright  2020 Université Clermont Auvergne
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use mod_teams\manager;
+use mod_teammeeting\manager;
 
 defined('MOODLE_INTERNAL') || die;
 
@@ -34,7 +34,7 @@ require_once($CFG->dirroot . '/calendar/lib.php');
  * @param string $feature FEATURE_xx constant for requested feature.
  * @return mixed True or false, null when unknown.
  */
-function teams_supports($feature) {
+function teammeeting_supports($feature) {
     switch ($feature) {
         case FEATURE_MOD_ARCHETYPE:
             return MOD_ARCHETYPE_RESOURCE;
@@ -60,13 +60,13 @@ function teams_supports($feature) {
 }
 
 /**
- * Add teams instance.
+ * Add instance.
  *
  * @param object $data The form data.
  * @param object $mform The form.
  * @return int The new instance ID.
  */
-function teams_add_instance($data, $mform) {
+function teammeeting_add_instance($data, $mform) {
     global $DB, $USER, $COURSE;
 
     $context = context_course::instance($COURSE->id);
@@ -124,22 +124,22 @@ function teams_add_instance($data, $mform) {
     $data->onlinemeetingid = $meetingid;
     $data->externalurl = $joinurl;
     $data->creatorid = $USER->id;
-    $data->id = $DB->insert_record('teams', $data);
+    $data->id = $DB->insert_record('teammeeting', $data);
 
     // Create the calendar events.
-    teams_set_events($data);
+    teammeeting_set_events($data);
 
     return $data->id;
 }
 
 /**
- * Update teams instance.
+ * Update instance.
  *
  * @param object $data the form data.
  * @param object $mform the form.
  * @return bool Whether the update was successful.
  */
-function teams_update_instance($data, $mform) {
+function teammeeting_update_instance($data, $mform) {
     global $DB, $COURSE;
 
     $context = context_course::instance($COURSE->id);
@@ -151,7 +151,7 @@ function teams_update_instance($data, $mform) {
     $data->introformat = $data->introformat;
     $data->timemodified = time();
 
-    $team = $DB->get_record('teams', ['id' => $data->instance]);
+    $team = $DB->get_record('teammeeting', ['id' => $data->instance]);
     $requiresupdate = $team->opendate != $data->opendate || $team->closedate != $data->closedate || $team->name != $data->name;
 
     if ($requiresupdate) {
@@ -181,32 +181,32 @@ function teams_update_instance($data, $mform) {
     }
 
     $data->id = $data->instance;
-    $DB->update_record('teams', $data);
+    $DB->update_record('teammeeting', $data);
 
     // Update the calendar events.
-    teams_set_events($data);
+    teammeeting_set_events($data);
 
     return true;
 }
 
 /**
- * Delete teams instance.
+ * Delete instance.
  *
- * @param int $id The id of the teams instance to delete.
+ * @param int $id The id of the instance to delete.
  * @return bool true.
  */
-function teams_delete_instance($id) {
+function teammeeting_delete_instance($id) {
     global $DB;
 
-    if (!$team = $DB->get_record('teams', array('id' => $id))) {
+    if (!$team = $DB->get_record('teammeeting', array('id' => $id))) {
         return false;
     }
 
-    $cm = get_coursemodule_from_instance('teams', $id);
-    \core_completion\api::update_completion_date_event($cm->id, 'teams', $id, null);
+    $cm = get_coursemodule_from_instance('teammeeting', $id);
+    \core_completion\api::update_completion_date_event($cm->id, 'teammeeting', $id, null);
 
     // All context, files, calendar events, etc... are deleted automatically.
-    $DB->delete_records('teams', array('id' => $team->id));
+    $DB->delete_records('teammeeting', array('id' => $team->id));
 
     // Attempt to delete at Microsoft. This is temporarily disabled because it currently
     // conflicts with the ability to duplicate an activity. If an activity is duplicated, and
@@ -231,21 +231,21 @@ function teams_delete_instance($id) {
  * @param cm_info $coursemodule The course module.
  * @return cached_cm_info The info.
  */
-function teams_get_coursemodule_info($coursemodule) {
+function teammeeting_get_coursemodule_info($coursemodule) {
     global $DB;
 
-    if (!$resource = $DB->get_record('teams', ['id' => $coursemodule->instance], '*')) {
+    if (!$resource = $DB->get_record('teammeeting', ['id' => $coursemodule->instance], '*')) {
         return null;
     }
 
-    $fullurl = new moodle_url('/mod/teams/view.php', ['id' => $coursemodule->id, 'redirect' => 1]);
+    $fullurl = new moodle_url('/mod/teammeeting/view.php', ['id' => $coursemodule->id, 'redirect' => 1]);
     $info = new cached_cm_info();
     $info->name = $resource->name;
     $info->onclick = "window.open('{$fullurl->out(false)}'); return false;";
 
     if ($coursemodule->showdescription) {
         // Convert intro to html. Do not filter cached version, filters run at display time.
-        $info->content = format_module_intro('teams', $resource, $coursemodule->id, false);
+        $info->content = format_module_intro('teammeeting', $resource, $coursemodule->id, false);
     }
 
     $info->customdata = ['fullurl' => $resource->externalurl];
@@ -258,10 +258,10 @@ function teams_get_coursemodule_info($coursemodule) {
  *
  * @param object $team The team data.
  */
-function teams_set_events($team) {
+function teammeeting_set_events($team) {
     global $DB;
 
-    if ($events = $DB->get_records('event', array('modulename' => 'teams', 'instance' => $team->id))) {
+    if ($events = $DB->get_records('event', array('modulename' => 'teammeeting', 'instance' => $team->id))) {
         foreach ($events as $event) {
             $event = calendar_event::load($event);
             $event->delete();
@@ -280,11 +280,11 @@ function teams_set_events($team) {
     $event->courseid = $team->course;
     $event->groupid = 0;
     $event->userid = 0;
-    $event->modulename = 'teams';
+    $event->modulename = 'teammeeting';
     $event->instance = $team->id;
     $event->eventtype = 'open';
     $event->timestart = $team->opendate;
-    $event->visible = instance_is_visible('teams', $team);
+    $event->visible = instance_is_visible('teammeeting', $team);
     $event->timeduration = ($team->closedate - $team->opendate);
     calendar_event::create($event);
 }
@@ -292,14 +292,14 @@ function teams_set_events($team) {
 /**
  * Prints information about the availability of the online meeting.
  *
- * @param object $team The teams instance.
+ * @param object $team The instance.
  * @param string $format The format ('html' by default, 'text' can be used for notification).
  * @return string The information about the meeting.
  */
-function teams_print_details_dates($team, $format = 'html') {
+function teammeeting_print_details_dates($team, $format = 'html') {
     global $OUTPUT;
     if (!$team->reusemeeting) {
-        $msg = get_string('meetingavailablebetween', 'mod_teams', [
+        $msg = get_string('meetingavailablebetween', 'mod_teammeeting', [
             'from' => userdate($team->opendate, get_string('strftimedatetimeshort', 'core_langconfig')),
             'to' => userdate($team->closedate, get_string('strftimedatetimeshort', 'core_langconfig')),
         ]);

@@ -17,13 +17,13 @@
 /**
  * Index page.
  *
- * @package   mod_teams
+ * @package   mod_teammeeting
  * @copyright 2021 Université Clermont Auvergne
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 require_once(__DIR__ . '/../../config.php');
-require_once($CFG->dirroot . '/mod/teams/lib.php');
+require_once($CFG->dirroot . '/mod/teammeeting/lib.php');
 
 // For this type of page this is the course id.
 $id = required_param('id', PARAM_INT);
@@ -33,15 +33,15 @@ require_login($course);
 
 $context = context_course::instance($course->id);
 
-$PAGE->set_url('/mod/teams/index.php', array('id' => $id));
+$PAGE->set_url('/mod/teammeeting/index.php', array('id' => $id));
 $PAGE->set_pagelayout('incourse');
 
-$event = \mod_teams\event\course_module_instance_list_viewed::create(['context' => $context]);
+$event = \mod_teammeeting\event\course_module_instance_list_viewed::create(['context' => $context]);
 $event->add_record_snapshot('course', $course);
 $event->trigger();
 
 // Print the header.
-$strplural = get_string("modulenameplural", "teams");
+$strplural = get_string('modulenameplural', 'teammeeting');
 $PAGE->navbar->add($strplural);
 $PAGE->set_title($strplural);
 $PAGE->set_heading($course->fullname);
@@ -49,9 +49,9 @@ $PAGE->set_heading($course->fullname);
 echo $OUTPUT->header();
 echo $OUTPUT->heading(format_string($strplural));
 
-require_capability('mod/teams:view', $context);
+require_capability('mod/teammeeting:view', $context);
 
-$teams = get_all_instances_in_course('teams', $course);
+$teams = get_all_instances_in_course('teammeeting', $course);
 if (!$teams) {
     notice('There are no instances of teams resources', "../../course/view.php?id=$course->id");
     die;
@@ -63,7 +63,7 @@ $table->head = array(get_string('sectionname', 'format_' . $course->format), get
 $table->align = array('left', 'left');
 
 foreach ($teams as $team) {
-    if (has_capability('mod/teams:view', context_module::instance($team->coursemodule))) {
+    if (has_capability('mod/teammeeting:view', context_module::instance($team->coursemodule))) {
         if (!$team->visible) {
             // Show dimmed if the mod is hidden.
             $link = '<a class="dimmed" href="view.php?id=' . $team->coursemodule . '">' . format_string($team->name) . '</a>';

@@ -17,25 +17,25 @@
 /**
  * Restore task.
  *
- * @package    mod_teams
- * @copyright  2021 Frédéric Massart
+ * @package    mod_teammeeting
+ * @copyright  2021 Murdoch University
  * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once(__DIR__ . '/restore_teams_stepslib.php');
+require_once(__DIR__ . '/restore_teammeeting_stepslib.php');
 
 /**
  * Restore task.
  *
- * @package    mod_teams
- * @copyright  2021 Frédéric Massart
+ * @package    mod_teammeeting
+ * @copyright  2021 Murdoch University
  * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class restore_teams_activity_task extends restore_activity_task {
+class restore_teammeeting_activity_task extends restore_activity_task {
 
     /**
      * Define settings.
@@ -47,7 +47,7 @@ class restore_teams_activity_task extends restore_activity_task {
      * Define steps.
      */
     protected function define_my_steps() {
-        $this->add_step(new restore_teams_activity_structure_step('teams_structure', 'teams.xml'));
+        $this->add_step(new restore_teammeeting_activity_structure_step('teammeeting_structure', 'teammeeting.xml'));
     }
 
     /**
@@ -55,7 +55,7 @@ class restore_teams_activity_task extends restore_activity_task {
      */
     public static function define_decode_contents() {
         $contents = [];
-        $contents[] = new restore_decode_content('teams', array('intro'), 'teams');
+        $contents[] = new restore_decode_content('teammeeting', array('intro'), 'teammeeting');
         return $contents;
     }
 
@@ -65,9 +65,9 @@ class restore_teams_activity_task extends restore_activity_task {
     public static function define_decode_rules() {
         $rules = [];
 
-        $rules[] = new restore_decode_rule('TEAMSINDEX', '/mod/teams/index.php?id=$1', 'course');
-        $rules[] = new restore_decode_rule('TEAMSVIEWBYID', '/mod/teams/view.php?id=$1', 'course_module');
-        $rules[] = new restore_decode_rule('TEAMSVIEWBYU', '/mod/teams/view.php?u=$1', 'teams');
+        $rules[] = new restore_decode_rule('TEAMMEETINGINDEX', '/mod/teammeeting/index.php?id=$1', 'course');
+        $rules[] = new restore_decode_rule('TEAMMEETINGVIEWBYID', '/mod/teammeeting/view.php?id=$1', 'course_module');
+        $rules[] = new restore_decode_rule('TEAMMEETINGVIEWBYU', '/mod/teammeeting/view.php?u=$1', 'teammeeting');
 
         return $rules;
 

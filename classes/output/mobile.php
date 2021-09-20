@@ -15,22 +15,22 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Provides {@see \mod_teams\output\mobile} class.
+ * Provides {@see \mod_teammeeting\output\mobile} class.
  *
  * @copyright  2021 Anthony Durif
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_teams\output;
+namespace mod_teammeeting\output;
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot . '/mod/teams/lib.php');
+require_once($CFG->dirroot . '/mod/teammeeting/lib.php');
 
 /**
  * Controls the display of the plugin in the Mobile App.
  *
- * @package    mod_teams
+ * @package    mod_teammeeting
  * @category   output
  * @copyright  2021 Anthony Durif
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -47,29 +47,29 @@ class mobile {
         global $OUTPUT, $DB;
 
         $args = (object) $args;
-        $cm = get_coursemodule_from_id('teams', $args->cmid);
+        $cm = get_coursemodule_from_id('teammeeting', $args->cmid);
         $context = \context_module::instance($cm->id);
 
         require_login($args->courseid, false, $cm, true, true);
-        require_capability('mod/teams:view', $context);
+        require_capability('mod/teammeeting:view', $context);
 
-        $teams = $DB->get_record('teams', ['id' => $cm->instance], '*', MUST_EXIST);
+        $meeting = $DB->get_record('teammeeting', ['id' => $cm->instance], '*', MUST_EXIST);
         $course = get_course($cm->course);
-        $canmanage = has_capability('mod/teams:addinstance', $context);
+        $canmanage = has_capability('mod/teammeeting:addinstance', $context);
 
         // Pre-format some of the texts for the mobile app.
-        $teams->name = external_format_string($teams->name, $context);
-        list($teams->intro, $teams->introformat) = external_format_text($teams->intro, $teams->introformat,
-            $context, 'mod_teams', 'intro');
+        $meeting->name = external_format_string($meeting->name, $context);
+        list($meeting->intro, $meeting->introformat) = external_format_text($meeting->intro, $meeting->introformat,
+            $context, 'mod_teammeeting', 'intro');
 
-        $details = teams_print_details_dates($teams, "text");
+        $details = teammeeting_print_details_dates($meeting, "text");
         $gotoresource = true;
 
         // Once off online meeting.
-        if (!$teams->reusemeeting) {
-            $isclosed = $teams->opendate > time() || $teams->closedate < time();
+        if (!$meeting->reusemeeting) {
+            $isclosed = $meeting->opendate > time() || $meeting->closedate < time();
             if (!$canmanage && $isclosed) {
-                $details = get_string('meetingnotavailable', 'mod_teams', teams_print_details_dates($teams, "text"));
+                $details = get_string('meetingnotavailable', 'mod_teammeeting', teammeeting_print_details_dates($meeting, "text"));
                 $gotoresource = false;
             }
         }
@@ -79,7 +79,7 @@ class mobile {
 
         $data = [
             'cmid' => $cm->id,
-            'teams' => $teams,
+            'meeting' => $meeting,
             'details' => $details,
             'gotoresource' => $gotoresource,
             'defaulturl' => $defaulturl
@@ -89,7 +89,7 @@ class mobile {
             'templates' => [
                 [
                     'id' => 'main',
-                    'html' => $OUTPUT->render_from_template('mod_teams/mobile_view', $data),
+                    'html' => $OUTPUT->render_from_template('mod_teammeeting/mobile_view', $data),
                 ],
             ],
             'javascript' => '',
