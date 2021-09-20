@@ -43,11 +43,6 @@ defined('MOODLE_INTERNAL') || die();
  */
 class manager {
 
-    /** Type OnlineMeeting. */
-    const TYPE_MEETING = 'meeting';
-    /** Type Team. */
-    const TYPE_TEAM = 'team';
-
     /** @var static */
     protected static $instance;
 

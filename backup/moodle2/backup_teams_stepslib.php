@@ -40,18 +40,14 @@ class backup_teams_activity_structure_step extends backup_activity_structure_ste
         // Define each element separated.
         $teams = new backup_nested_element('teams', ['id'], [
             'name', 'intro', 'introformat', 'externalurl', 'opendate', 'closedate',
-            'resource_teams_id', 'creator_id', 'reuse_meeting', 'timemodified',
-
-            // Presently unused, or ineffective, but required.
-            'display', 'displayoptions', 'type', 'enrol_managers', 'population',
-            'selection', 'other_owners'
+            'onlinemeetingid', 'creatorid', 'reusemeeting', 'timemodified'
         ]);
 
         // Define sources.
         $teams->set_source_table('teams', array('id' => backup::VAR_ACTIVITYID));
 
         // Define ID annotations.
-        $teams->annotate_ids('user', 'creator_id');
+        $teams->annotate_ids('user', 'creatorid');
 
         // Define file annotations.
         $teams->annotate_files('mod_teams', 'intro', null);

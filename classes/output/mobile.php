@@ -66,7 +66,7 @@ class mobile {
         $gotoresource = true;
 
         // Once off online meeting.
-        if (!$teams->reuse_meeting) {
+        if (!$teams->reusemeeting) {
             $isclosed = $teams->opendate > time() || $teams->closedate < time();
             if (!$canmanage && $isclosed) {
                 $details = get_string('meetingnotavailable', 'mod_teams', teams_print_details_dates($teams, "text"));

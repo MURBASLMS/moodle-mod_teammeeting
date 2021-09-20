@@ -55,12 +55,8 @@ $canmanage = has_capability('mod/teams:addinstance', $context);
 $courseurl = new moodle_url('/course/view.php', array('id' => $cm->course));
 $meetingurl = $resource->externalurl;
 
-if ($resource->type != manager::TYPE_MEETING) {
-    throw new \coding_exception('Instances of type teams are not currently supported.');
-}
-
 // Once off online meeting.
-if (!$resource->reuse_meeting) {
+if (!$resource->reusemeeting) {
     $isclosed = $resource->opendate > time() || $resource->closedate < time();
     if (!$canmanage && $isclosed) {
         notice(get_string('meetingnotavailable', 'mod_teams', teams_print_details_dates($resource, "text")), $courseurl);

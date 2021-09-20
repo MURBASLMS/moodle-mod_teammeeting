@@ -65,17 +65,10 @@ function teams_add_instance($data, $mform) {
     $manager->require_is_available();
     $manager->require_is_o365_user($USER->id);
 
-    // Fixing display options.
-    $data->display = RESOURCELIB_DISPLAY_NEW;
-    $data->displayoptions = serialize([]);
-
     $data->name = $data->name;
     $data->intro = $data->intro;
     $data->introformat = $data->introformat;
     $data->timemodified = time();
-    $data->population = $data->type == manager::TYPE_TEAM ? $data->population : "meeting";
-    $data->enrol_managers = false;
-    $data->other_owners = null;
 
     // Creating the meeting at Microsoft.
     $o365user = $manager->get_o365_user($USER->id);
@@ -100,7 +93,7 @@ function teams_add_instance($data, $mform) {
         ],
         'subject' => format_string($data->name, true, ['context' => $context])
     ];
-    if (!$data->reuse_meeting) {
+    if (!$data->reusemeeting) {
         $meetingdata = array_merge($meetingdata, [
             'startDateTime' => (new DateTimeImmutable("@{$data->opendate}", new DateTimeZone('UTC')))->format('Y-m-d\TH:i:s\Z'),
             'endDateTime' => (new DateTimeImmutable("@{$data->closedate}", new DateTimeZone('UTC')))->format('Y-m-d\TH:i:s\Z'),
@@ -119,9 +112,9 @@ function teams_add_instance($data, $mform) {
     $joinurl = $result['joinWebUrl'];
 
     // Creating the activity.
-    $data->resource_teams_id = $meetingid;
+    $data->onlinemeetingid = $meetingid;
     $data->externalurl = $joinurl;
-    $data->creator_id = $USER->id;
+    $data->creatorid = $USER->id;
     $data->id = $DB->insert_record('teams', $data);
 
     // Create the calendar events.
@@ -153,22 +146,22 @@ function teams_update_instance($data, $mform) {
     $requiresupdate = $team->opendate != $data->opendate || $team->closedate != $data->closedate || $team->name != $data->name;
 
     if ($requiresupdate) {
-        $manager->require_is_o365_user($team->creator_id);
+        $manager->require_is_o365_user($team->creatorid);
 
         // Updating the meeting at Microsoft.
-        $o365user = $manager->get_o365_user($team->creator_id);
+        $o365user = $manager->get_o365_user($team->creatorid);
         $api = $manager->get_api();
         $meetingdata = [
             'subject' => format_string($data->name, true, ['context' => $context])
         ];
-        if (!$data->reuse_meeting) {
+        if (!$data->reusemeeting) {
             $meetingdata = array_merge($meetingdata, [
                 'startDateTime' => (new DateTimeImmutable("@{$data->opendate}", new DateTimeZone('UTC')))->format('Y-m-d\TH:i:s\Z'),
                 'endDateTime' => (new DateTimeImmutable("@{$data->closedate}", new DateTimeZone('UTC')))->format('Y-m-d\TH:i:s\Z'),
             ]);
         }
 
-        $meetingid = $team->resource_teams_id;
+        $meetingid = $team->onlinemeetingid;
         $resp = $api->apicall('PATCH', "/users/{$o365user->objectid}/onlineMeetings/{$meetingid}", json_encode($meetingdata));
         $result = $api->process_apicall_response($resp, [
             'id' => null,
@@ -212,10 +205,10 @@ function teams_delete_instance($id) {
     // strategy would be to create a new meeting upon restore but that has broader implications.
     if (false) {
         $manager = manager::get_instance();
-        if ($manager->is_available() && $manager->is_o365_user($team->creator_id)) {
-            $o365user = $manager->get_o365_user($team->creator_id);
+        if ($manager->is_available() && $manager->is_o365_user($team->creatorid)) {
+            $o365user = $manager->get_o365_user($team->creatorid);
             $api = $manager->get_api();
-            $meetingid = $team->resource_teams_id;
+            $meetingid = $team->onlinemeetingid;
             $api->apicall('DELETE', "/users/{$o365user->objectid}/onlineMeetings/{$meetingid}");
         }
     }
@@ -297,7 +290,7 @@ function teams_set_events($team) {
  */
 function teams_print_details_dates($team, $format = 'html') {
     global $OUTPUT;
-    if ($team->type == manager::TYPE_MEETING && !$team->reuse_meeting) {
+    if (!$team->reusemeeting) {
         $msg = get_string('meetingavailablebetween', 'mod_teams', [
             'from' => userdate($team->opendate, get_string('strftimedatetimeshort', 'core_langconfig')),
             'to' => userdate($team->closedate, get_string('strftimedatetimeshort', 'core_langconfig')),

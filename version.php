@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Resource teams module version information
+ * Version.
  *
  * @package    mod_teams
  * @copyright  2020 Université Clermont Auvergne
@@ -24,9 +24,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2021091402; // The current plugin version (Date: YYYYMMDDXX).
-$plugin->requires  = 2019051100; // Requires this Moodle version
-$plugin->component = 'mod_teams'; // Full name of the plugin (used for diagnostics)
-$plugin->cron      = 0;
+$plugin->version   = 2021091402;
+$plugin->requires  = 2019051100;
+$plugin->component = 'mod_teams';
 $plugin->release   = 'v3.11-r1';
 $plugin->maturity  = MATURITY_STABLE;

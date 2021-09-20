@@ -23,6 +23,8 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 $string['apinotconfigured'] = 'The Microsoft API needs to be configured and enabled in the plugin local_o365. Note that this is incomptaible with the legacy API.';
 $string['back'] = 'Return to course';
 $string['clicktoopen'] = 'Click {$a} link to open the meeting.';
@@ -48,13 +50,13 @@ $string['pluginadministration'] = 'Teams Resource';
 $string['pluginname'] = 'Teams';
 $string['privacy:metadata'] = 'Teams Resource plugin does not store or transmit any personal data.';
 $string['returntocourse'] = 'Return to the course';
-$string['reuse_meeting_help'] = 'The meeting time defines whether the meeting is limited to a time slot, or is available permanently.
+$string['reusemeeting_help'] = 'The meeting time defines whether the meeting is limited to a time slot, or is available permanently.
 
 - **Open ended**: The meeting URL will be accessible to whoever can access this activity from the course page.</li>
 - **Time slot**: The meeting URL is always available to its creator. For anybody else, the meeting will only be available within the given time frame.
 ';
-$string['reuse_meeting_no'] = 'Time slot';
-$string['reuse_meeting_yes'] = 'Open ended';
-$string['reuse_meeting'] = 'Meeting time';
+$string['reusemeeting_no'] = 'Time slot';
+$string['reusemeeting_yes'] = 'Open ended';
+$string['reusemeeting'] = 'Meeting time';
 $string['teams:addinstance'] = 'Add a Teams Resource';
 $string['teams:view'] = 'View a Teams Resource';

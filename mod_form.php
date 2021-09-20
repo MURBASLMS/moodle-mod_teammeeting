@@ -69,30 +69,25 @@ class mod_teams_mod_form extends moodleform_mod {
 
         $mform->addElement('header', 'general', get_string('general'));
 
-        $mform->addElement('hidden', 'type');
-        $mform->setType('type', PARAM_ALPHANUM);
-        $mform->setConstant('type', $isedit ? $this->current->type : manager::TYPE_MEETING);
-
         $mform->addElement('text', 'name', get_string('name', 'core'), ['size' => '64']);
         $mform->addRule('name', get_string('maximumchars', 'core', 255), 'maxlength', 255, 'client');
         $mform->setType('name', PARAM_TEXT);
 
         $this->standard_intro_elements();
 
-        $mform->addElement('select', 'reuse_meeting', get_string('reuse_meeting', 'mod_teams'), [
-            1 => get_string('reuse_meeting_yes', 'mod_teams'),
-            0 => get_string('reuse_meeting_no', 'mod_teams'),
+        $mform->addElement('select', 'reusemeeting', get_string('reusemeeting', 'mod_teams'), [
+            1 => get_string('reusemeeting_yes', 'mod_teams'),
+            0 => get_string('reusemeeting_no', 'mod_teams'),
         ]);
-        $mform->addHelpButton('reuse_meeting', 'reuse_meeting', 'mod_teams');
-        $mform->setDefault('reuse_meeting', 1);
-        $mform->hideIf('reuse_meeting', 'type', 'eq', 'team');
+        $mform->addHelpButton('reusemeeting', 'reusemeeting', 'mod_teams');
+        $mform->setDefault('reusemeeting', 1);
 
         // Disable the reusability when we edit the resource because we cannot update
         // the meeting type (isBroadcast) once it has been created.
         if ($isedit) {
-            $mform->freeze('reuse_meeting');
-            $mform->setConstant('reuse_meeting', $this->current->reuse_meeting);
-            $mform->disabledIf('reuse_meeting', 'team_id', 'neq', '');
+            $mform->freeze('reusemeeting');
+            $mform->setConstant('reusemeeting', $this->current->reusemeeting);
+            $mform->disabledIf('reusemeeting', 'team_id', 'neq', '');
         }
 
         // The date selectors.
@@ -112,10 +107,8 @@ class mod_teams_mod_form extends moodleform_mod {
         ]);
         $mform->addHelpButton('closedate', 'closedate', 'mod_teams');
 
-        $mform->hideIf('opendate', 'type', 'eq', 'team');
-        $mform->hideIf('closedate', 'type', 'eq', 'team');
-        $mform->hideIf('opendate', 'reuse_meeting', 'eq', 1);
-        $mform->hideIf('closedate', 'reuse_meeting', 'eq', 1);
+        $mform->hideIf('opendate', 'reusemeeting', 'eq', 1);
+        $mform->hideIf('closedate', 'reusemeeting', 'eq', 1);
 
         $this->standard_coursemodule_elements();
         $this->add_action_buttons();
@@ -135,7 +128,7 @@ class mod_teams_mod_form extends moodleform_mod {
         $haschangeddates = !$isedit || ($this->current->opendate != $data['opendate']
             || $this->current->closedate != $data['closedate']);
 
-        if (!$data['reuse_meeting']) {
+        if (!$data['reusemeeting']) {
             if ($haschangeddates && (!empty($data['closedate']) && $data['closedate'] < time())) {
                 // Only validate this on new, or edits where dates have changed, otherwise
                 // we wouldn't be able to edit an instance that has been finished.
@@ -165,7 +158,7 @@ class mod_teams_mod_form extends moodleform_mod {
     public function data_postprocessing($data) {
         parent::data_postprocessing($data);
 
-        $ispermanent = !empty($data->reuse_meeting);
+        $ispermanent = !empty($data->reusemeeting);
         $defaultduration = (int) get_config('mod_teams', 'meeting_default_duration');
 
         if (!empty($data->completionunlocked)) {

@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * List upgrade changes of the plugin.
+ * Upgrade.
  *
  * @package    mod_teams
  * @copyright  2021 Université Clermont Auvergne
@@ -25,113 +25,13 @@
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * @param int $oldversion the version we are upgrading from
- * @return bool result
+ * Upgrade function.
+ *
+ * @param int $oldversion The version we are upgrading from.
+ * @return bool The result.
  */
 function xmldb_teams_upgrade($oldversion) {
     global $DB;
-
-    if ($oldversion < 2020052600) {
-        $dbman = $DB->get_manager();
-
-        $table = new xmldb_table('teams');
-        $field = new xmldb_field('grade', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null, 'id');
-        if ($dbman->field_exists($table, $field)) {
-            $dbman->rename_field($table, $field, 'enrol_managers');
-        }
-
-        $field = new xmldb_field('enrol_managers', XMLDB_TYPE_INTEGER, 1, null, false, null, 0);
-        if ($dbman->field_exists($table, $field)) {
-            $dbman->change_field_type($table, $field);
-        }
-
-        $field = new xmldb_field('creator_id', XMLDB_TYPE_INTEGER, 10, null, false, null, null);
-        if (!$dbman->field_exists($table, $field)) {
-            $dbman->add_field($table, $field);
-        }
-        $index = new xmldb_index('creator_id', XMLDB_INDEX_NOTUNIQUE, array('creator_id'));
-        if (!$dbman->index_exists($table, $index)) {
-            $dbman->add_index($table, $index);
-        }
-
-        upgrade_mod_savepoint(true, 2020052600, 'teams');
-    }
-
-    if ($oldversion < 2020091200) {
-        $dbman = $DB->get_manager();
-
-        $table = new xmldb_table('teams');
-
-        $opendate = new xmldb_field('opendate', XMLDB_TYPE_INTEGER, 10, null, false, null, 0);
-        if (!$dbman->field_exists($table, $opendate)) {
-            $dbman->add_field($table, $opendate);
-        }
-
-        $closedate = new xmldb_field('closedate', XMLDB_TYPE_INTEGER, 10, null, false, null, 0);
-        if (!$dbman->field_exists($table, $closedate)) {
-            $dbman->add_field($table, $closedate);
-        }
-
-        upgrade_mod_savepoint(true, 2020091200, 'teams');
-    }
-
-    if ($oldversion < 2020101301) {
-        $dbman = $DB->get_manager();
-        $table = new xmldb_table('teams');
-
-        $type = new xmldb_field('type', XMLDB_TYPE_CHAR, 30, null, false, null, 'team');
-        if (!$dbman->field_exists($table, $type)) {
-            $dbman->add_field($table, $type);
-        }
-
-        $team_id = new xmldb_field('team_id', XMLDB_TYPE_TEXT, null, null, false, null, null);
-        if ($dbman->field_exists($table, $team_id)) {
-            $dbman->rename_field($table, $team_id, 'resource_teams_id');
-        }
-
-        upgrade_mod_savepoint(true, 2020101301, 'teams');
-    }
-
-    if ($oldversion < 2021011205) {
-        $dbman = $DB->get_manager();
-        $table = new xmldb_table('teams');
-
-        $reuse = new xmldb_field('reuse_meeting', XMLDB_TYPE_INTEGER, 1, null, false, null, 1);
-        if (!$dbman->field_exists($table, $reuse)) {
-            $dbman->add_field($table, $reuse);
-        }
-
-        upgrade_mod_savepoint(true, 2021011205, 'teams');
-    }
-
-    if ($oldversion < 2021020800) {
-        $dbman = $DB->get_manager();
-        $table = new xmldb_table('teams');
-
-        $owners = new xmldb_field('other_owners', XMLDB_TYPE_TEXT, null, null, false, null, null);
-        if (!$dbman->field_exists($table, $owners)) {
-            $dbman->add_field($table, $owners);
-        }
-
-        upgrade_mod_savepoint(true, 2021020800, 'teams');
-    }
-
-    if ($oldversion < 2021091400) {
-
-        // Convert the duration setting to a number of seconds.
-        $seconds = 3600 * 2;
-        $duration = get_config('mod_teams', 'meeting_default_duration');
-        if ($duration === '+30 minutes') {
-            $seconds = 1800;
-        } else if ($duration === '+1 hour') {
-            $seconds = 3600;
-        } else if ($duration === '+3 hours') {
-            $seconds = 3600 * 3;
-        }
-        set_config('meeting_default_duration', $seconds, 'mod_teams');
-
-        upgrade_mod_savepoint(true, 2021091400, 'teams');
-    }
 
     return true;
 }

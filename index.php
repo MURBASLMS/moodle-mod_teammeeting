@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Displays information about all the teams modules in the requested course
+ * Displays information about all the modules in the requested course.
  *
  * @package   mod_teams
  * @copyright 2021 Université Clermont Auvergne
