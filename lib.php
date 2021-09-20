@@ -106,7 +106,8 @@ function teammeeting_add_instance($data, $mform) {
         $meetingdata = array_merge($meetingdata, [
             'startDateTime' => (new DateTimeImmutable("@{$data->opendate}", new DateTimeZone('UTC')))->format('Y-m-d\TH:i:s\Z'),
             'endDateTime' => (new DateTimeImmutable("@{$data->closedate}", new DateTimeZone('UTC')))->format('Y-m-d\TH:i:s\Z'),
-            'isBroadcast' => true,
+            // Disable broadcast (live) events, out-of-time access will be controlled in Moodle.
+            // 'isBroadcast' => true,
         ]);
     }
 
