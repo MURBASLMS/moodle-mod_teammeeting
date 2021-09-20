@@ -24,11 +24,6 @@
 defined('MOODLE_INTERNAL') || die;
 
 if ($ADMIN->fulltree) {
-    $settings->add(new admin_setting_configcheckbox('mod_teams/notif_mail',
-        get_string('notif_mail', 'mod_teams'),
-        get_string('notif_mail_help', 'mod_teams'),
-        0
-    ));
     $settings->add(new admin_setting_configduration('mod_teams/meeting_default_duration',
         get_string('meeting_default_duration', 'mod_teams'),
         get_string('meeting_default_duration_help', 'mod_teams') ,

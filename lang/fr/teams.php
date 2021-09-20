@@ -94,9 +94,6 @@ $string['copy_link'] = 'Copier le lien dans le presse-papier';
 $string['create_mail_content'] = 'Bonjour,\nVous venez de créer la réunion Teams "%s" depuis votre cours moodle "%s".\nRetrouvez celle-ci en cliquant sur le lien ci-après : ';
 $string['create_mail_title'] = 'Création de votre réunion Teams';
 $string['messageprovider:meetingconfirm'] = 'Confirmation de la création de réunion Teams';
-$string['notif_mail'] = 'Notification de création de réunion';
-$string['notif_mail_help'] = 'Envoyer une notification suite à la création d\'une réunion avec le lien vers celle-ci.';
-
 $string['owners'] = 'Définir les propriétaires de l\'équipe';
 $string['owners_help'] = '<p>Choisissez les utilisateurs qui seront propriétaires de l\'équipe :
                                         <ul><li>le créateur de l\'équipe uniquement : seul vous ou l\'utilisateur sélectionnée dans le cas de la création pour autrui sera ajouté comme propriétaire de l\'équipe. </li>

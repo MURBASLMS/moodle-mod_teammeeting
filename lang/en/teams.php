@@ -43,18 +43,8 @@ $string['errordatespast'] = 'The closing date cannot be set in the past.';
 $string['meetingnotavailable'] = 'Access to this meeting is not available. {$a} In case of difficulties please contact your course manager(s).';
 $string['meetingavailablebetween'] = 'The online meeting is available between {$a->from} and {$a->to}.';
 $string['copy_link'] = 'Copy the meeting link to the clipboard';
-$string['create_mail_content'] = 'Hello,
-
-You have just created the Teams online meeting "{$a->name}" in your course "{$a->course}".
-
-You can find this meeting by clicking on this link:
-[{$a->url}]({$a->url})
-';
 $string['clicktoopen'] = 'Click {$a} link to open the meeting.';
-$string['create_mail_title'] = 'New Teams online meeting created';
 $string['messageprovider:meetingconfirm'] = 'Confirmation of the Teams online meeting creation';
-$string['notif_mail'] = 'Online meeting creation notification';
-$string['notif_mail_help'] = 'Send a notification after the creation of an online meeting with the link to it.';
 $string['reuse_meeting'] = 'Meeting time';
 $string['reuse_meeting_help'] = 'The meeting time defines whether the meeting is limited to a time slot, or is available permanently.
 

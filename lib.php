@@ -124,30 +124,6 @@ function teams_add_instance($data, $mform) {
     $data->creator_id = $USER->id;
     $data->id = $DB->insert_record('teams', $data);
 
-    // Send meeting link to the creator.
-    if ((bool) get_config('mod_teams', 'notif_mail')) {
-        $content = markdown_to_html(get_string('create_mail_content', 'mod_teams', [
-            'name' => format_string($data->name, true, ['context' => $context]),
-            'course' => format_string($COURSE->fullname, true, ['context' => $context]),
-            'url' => $joinurl,
-        ]));
-
-        // Creation notification.
-        $message = new \core\message\message();
-        $message->courseid = $COURSE->id;
-        $message->component = 'mod_teams';
-        $message->name = 'meetingconfirm';
-        $message->userfrom = core_user::get_noreply_user();
-        $message->userto = $USER;
-        $message->subject = get_string('create_mail_title', 'mod_teams');
-        $message->fullmessage = html_to_text($content);
-        $message->fullmessageformat = FORMAT_PLAIN;
-        $message->fullmessagehtml = $content;
-        $message->smallmessage = get_string('create_mail_title', 'mod_teams');
-        $message->notification = 1;
-        message_send($message);
-    }
-
     // Create the calendar events.
     teams_set_events($data);
 
