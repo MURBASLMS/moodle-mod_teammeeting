@@ -1,6 +1,11 @@
 Changelog
 =========
 
+v1.0.2
+------
+
+- Temporarily disable backup/restore functionality
+
 v1.0.1
 ------
 
