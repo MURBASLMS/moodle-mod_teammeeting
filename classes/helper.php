@@ -26,6 +26,7 @@
 namespace mod_teammeeting;
 
 use context;
+use context_course;
 use local_o365\utils;
 
 defined('MOODLE_INTERNAL') || die();
@@ -77,4 +78,27 @@ class helper {
         ];
     }
 
+    /**
+     * Update the attendees of a meeting.
+     *
+     * @param object $teammeeting The team meeting record.
+     */
+    public static function update_teammeeting_instance_attendees($teammeeting) {
+        $courseid = $teammeeting->course;
+        $context = context_course::instance($courseid);
+        $manager = manager::get_instance();
+        $manager->require_is_available();
+
+        $meetingdata = [
+            'participants' => [
+                'attendees' => helper::make_attendee_list($context, $teammeeting->creatorid)
+            ]
+        ];
+
+        $api = $manager->get_api();
+        $o365user = \local_o365\obj\o365user::instance_from_muserid($teammeeting->creatorid);
+        $meetingid = $teammeeting->onlinemeetingid;
+        $resp = $api->apicall('PATCH', "/users/{$o365user->objectid}/onlineMeetings/{$meetingid}", json_encode($meetingdata));
+        $api->process_apicall_response($resp, []);
+    }
 }

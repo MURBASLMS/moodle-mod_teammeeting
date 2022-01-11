@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="mod/teammeeting/db" VERSION="20210920" COMMENT="XMLDB file for the resource teammeeting module"
+<XMLDB PATH="mod/teammeeting/db" VERSION="20220110" COMMENT="XMLDB file for the resource teammeeting module"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -17,6 +17,7 @@
         <FIELD NAME="onlinemeetingid" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="externalurl" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="creatorid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="lastpresenterssync" TYPE="int" LENGTH="10" NOTNULL="false" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>

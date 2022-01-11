@@ -22,6 +22,8 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use mod_teammeeting\helper;
+
 require_once(__DIR__ . '/../../config.php');
 require_once($CFG->dirroot . '/mod/teammeeting/lib.php');
 require_once($CFG->libdir . '/completionlib.php');
@@ -75,6 +77,26 @@ $event->trigger();
 // Update 'viewed' state if required by completion system.
 $completion = new completion_info($course);
 $completion->set_module_viewed($cm);
+
+// Update the list of presenters. We do not need to do this for meetings that have an
+// end date, but that is already filtered above. In all other cases, it's best that we
+// update this every 5 minutes to make sure we're in sync with the latest roles before
+// the meeting is launched. Once the meeting is started (1 attendee joins), changes
+// to the meeting role & permissions will not have effect until all attendees leave and
+// join again.
+$shouldupdatepresenters = $resource->lastpresenterssync < time() - 5 * 60;
+if ($shouldupdatepresenters) {
+    // We update the lastpresenterssync right away to limit the number of concurrent requests that sync.
+    $origlastpresenterssync = $resource->lastpresenterssync;
+    $DB->set_field('teammeeting', 'lastpresenterssync', $resource->lastpresenterssync, ['id' => $resource->id]);
+    $resource->lastpresenterssync = time();
+    try {
+        helper::update_teammeeting_instance_attendees($resource);
+    } catch (Exception $e) {
+        $DB->set_field('teammeeting', 'lastpresenterssync', $origlastpresenterssync, ['id' => $resource->id]);
+        throw $e;
+    }
+}
 
 // If a redirect is request.
 if ($redirect) {

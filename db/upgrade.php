@@ -33,5 +33,22 @@ defined('MOODLE_INTERNAL') || die();
 function xmldb_teammeeting_upgrade($oldversion) {
     global $DB;
 
+    $dbman = $DB->get_manager();
+
+    if ($oldversion < 2022011003) {
+
+        // Define field lastpresenterssync to be added to teammeeting.
+        $table = new xmldb_table('teammeeting');
+        $field = new xmldb_field('lastpresenterssync', XMLDB_TYPE_INTEGER, '10', null, null, null, '0', 'creatorid');
+
+        // Conditionally launch add field lastpresenterssync.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Teammeeting savepoint reached.
+        upgrade_mod_savepoint(true, 2022011003, 'teammeeting');
+    }
+
     return true;
 }

@@ -117,6 +117,7 @@ function teammeeting_add_instance($data, $mform) {
     $joinurl = $result['joinWebUrl'];
 
     // Creating the activity.
+    $data->lastpresenterssync = time();
     $data->onlinemeetingid = $meetingid;
     $data->externalurl = $joinurl;
     $data->creatorid = $USER->id;
@@ -148,32 +149,35 @@ function teammeeting_update_instance($data, $mform) {
     $data->timemodified = time();
 
     $team = $DB->get_record('teammeeting', ['id' => $data->instance]);
-    $manager->require_is_o365_user($team->creatorid);
+    $requiresupdate = $team->opendate != $data->opendate || $team->closedate != $data->closedate || $team->name != $data->name;
 
-    // Updating the meeting at Microsoft.
-    $o365user = $manager->get_o365_user($team->creatorid);
-    $api = $manager->get_api();
-    $meetingdata = [
-        'subject' => format_string($data->name, true, ['context' => $context]),
-        'participants' => [
-            'attendees' => helper::make_attendee_list($context, $team->creatorid)
-        ]
-    ];
-    if (!$data->reusemeeting) {
-        $meetingdata = array_merge($meetingdata, [
-            'startDateTime' => (new DateTimeImmutable("@{$data->opendate}", new DateTimeZone('UTC')))->format('Y-m-d\TH:i:s\Z'),
-            'endDateTime' => (new DateTimeImmutable("@{$data->closedate}", new DateTimeZone('UTC')))->format('Y-m-d\TH:i:s\Z'),
+    if ($requiresupdate) {
+        $manager->require_is_o365_user($team->creatorid);
+
+        // Updating the meeting at Microsoft.
+        $o365user = $manager->get_o365_user($team->creatorid);
+        $api = $manager->get_api();
+        $meetingdata = [
+            'subject' => format_string($data->name, true, ['context' => $context]),
+        ];
+        if (!$data->reusemeeting) {
+            $meetingdata = array_merge($meetingdata, [
+                'startDateTime' => (new DateTimeImmutable("@{$data->opendate}", new DateTimeZone('UTC')))->format('Y-m-d\TH:i:s\Z'),
+                'endDateTime' => (new DateTimeImmutable("@{$data->closedate}", new DateTimeZone('UTC')))->format('Y-m-d\TH:i:s\Z'),
+            ]);
+        }
+
+        // Note that attendees (presenters) do not need updating, they are periodically updated when the meeting page is viewed.
+        $meetingid = $team->onlinemeetingid;
+        $resp = $api->apicall('PATCH', "/users/{$o365user->objectid}/onlineMeetings/{$meetingid}", json_encode($meetingdata));
+        $api->process_apicall_response($resp, [
+            'id' => null,
+            'startDateTime' => null,
+            'endDateTime' => null,
+            'joinWebUrl' => null,
         ]);
     }
 
-    $meetingid = $team->onlinemeetingid;
-    $resp = $api->apicall('PATCH', "/users/{$o365user->objectid}/onlineMeetings/{$meetingid}", json_encode($meetingdata));
-    $api->process_apicall_response($resp, [
-        'id' => null,
-        'startDateTime' => null,
-        'endDateTime' => null,
-        'joinWebUrl' => null,
-    ]);
 
     $data->id = $data->instance;
     $DB->update_record('teammeeting', $data);
