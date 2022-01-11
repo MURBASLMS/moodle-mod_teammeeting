@@ -1,6 +1,12 @@
 Changelog
 =========
 
+v1.1.0
+------
+
+- Introduce capability `mod/meeting:presentmeeting` to flag who can be a presenter
+- Flag and synchronise users with above capability as meeting attendees with role `presenter`
+
 v1.0.2
 ------
 

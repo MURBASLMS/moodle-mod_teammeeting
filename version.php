@@ -24,8 +24,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2022011003;
+$plugin->version   = 2022011100;
 $plugin->requires  = 2020061500;    // Moodle 3.9.0.
 $plugin->component = 'mod_teammeeting';
-$plugin->release   = 'v1.0.2';
+$plugin->release   = 'v1.1.0';
 $plugin->maturity  = MATURITY_STABLE;
