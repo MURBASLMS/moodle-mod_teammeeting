@@ -57,4 +57,5 @@ $string['reusemeetingno'] = 'Time slot';
 $string['reusemeetingyes'] = 'Open ended';
 $string['reusemeeting'] = 'Meeting time';
 $string['teammeeting:addinstance'] = 'Add a Team meeting instance';
+$string['teammeeting:presentmeeting'] = 'Whether the user can present online meetings';
 $string['teammeeting:view'] = 'View a Team meeting instance';
