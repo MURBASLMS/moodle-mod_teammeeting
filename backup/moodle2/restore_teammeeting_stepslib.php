@@ -59,7 +59,12 @@ class restore_teammeeting_activity_structure_step extends restore_activity_struc
         $oldid = $data->id;
         $data->course = $this->get_courseid();
         $data->usermodified = $this->get_mappingid('user', $data->usermodified, $USER->id);
-        $data->organiserid = $this->get_mappingid('user', $data->organiserid, $USER->id);
+
+        // Restored activities do not restore their associated online meeting.
+        $data->organiserid = null;
+        $data->onlinemeetingid = null;
+        $data->externalurl = null;
+        $data->lastpresentersync = 0;
 
         // Insert the new record.
         $newitemid = $DB->insert_record('teammeeting', $data);
