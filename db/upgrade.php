@@ -63,6 +63,46 @@ function xmldb_teammeeting_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2022012700, 'teammeeting');
     }
 
+    if ($oldversion < 2022012701) {
+
+        // Define field organiserid to be added to teammeeting.
+        $table = new xmldb_table('teammeeting');
+        $field = new xmldb_field('organiserid', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'reusemeeting');
+
+        // Conditionally launch add field organiserid.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Teammeeting savepoint reached.
+        upgrade_mod_savepoint(true, 2022012701, 'teammeeting');
+    }
+
+    if ($oldversion < 2022012702) {
+
+        // Changing nullability of field onlinemeetingid on table teammeeting to null.
+        $table = new xmldb_table('teammeeting');
+        $field = new xmldb_field('onlinemeetingid', XMLDB_TYPE_TEXT, null, null, null, null, null, 'organiserid');
+
+        // Launch change of nullability for field onlinemeetingid.
+        $dbman->change_field_notnull($table, $field);
+
+        // Teammeeting savepoint reached.
+        upgrade_mod_savepoint(true, 2022012702, 'teammeeting');
+    }
+
+    if ($oldversion < 2022012703) {
+
+        // Changing nullability of field externalurl on table teammeeting to null.
+        $table = new xmldb_table('teammeeting');
+        $field = new xmldb_field('externalurl', XMLDB_TYPE_TEXT, null, null, null, null, null, 'onlinemeetingid');
+
+        // Launch change of nullability for field externalurl.
+        $dbman->change_field_notnull($table, $field);
+
+        // Teammeeting savepoint reached.
+        upgrade_mod_savepoint(true, 2022012703, 'teammeeting');
+    }
 
     return true;
 }

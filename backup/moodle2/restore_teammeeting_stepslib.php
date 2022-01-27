@@ -53,11 +53,13 @@ class restore_teammeeting_activity_structure_step extends restore_activity_struc
      * @param array $data The data.
      */
     protected function process_teammeeting($data) {
-        global $DB;
+        global $DB, $USER;
 
         $data = (object) $data;
         $oldid = $data->id;
         $data->course = $this->get_courseid();
+        $data->usermodified = $this->get_mappingid('user', $data->usermodified, $USER->id);
+        $data->organiserid = $this->get_mappingid('user', $data->organiserid, $USER->id);
 
         // Insert the new record.
         $newitemid = $DB->insert_record('teammeeting', $data);

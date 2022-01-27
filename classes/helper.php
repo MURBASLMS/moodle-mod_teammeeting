@@ -27,6 +27,8 @@ namespace mod_teammeeting;
 
 use context;
 use context_course;
+use DateTimeImmutable;
+use DateTimeZone;
 use local_o365\utils;
 
 defined('MOODLE_INTERNAL') || die();
@@ -40,6 +42,78 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class helper {
+
+    /**
+     * Create the online meeting instance.
+     *
+     * @param object $teammeeting The database record.
+     */
+    public static function create_onlinemeeting_instance($teammeeting) {
+        global $DB;
+
+        if (!empty($teammeeting->onlinemeetingid)) {
+            throw new \coding_exception('The meeting instance has already been created.');
+        } else if (empty($teammeeting->organiserid)) {
+            throw new \coding_exception('The organiser ID is not specified.');
+        }
+
+        $organiserid = $teammeeting->organiserid;
+        $context = context_course::instance($teammeeting->course);
+        $manager = manager::get_instance();
+        $manager->require_is_available();
+        $manager->require_is_o365_user($organiserid);
+
+        // Create the meeting instance.
+        $o365user = $manager->get_o365_user($organiserid);
+        $api = $manager->get_api();
+        $meetingdata = [
+            'allowedPresenters' => 'roleIsPresenter',
+            'autoAdmittedUsers' => 'everyone',
+            'lobbyBypassSettings' => [
+                'scope' => 'everyone',
+                'isDialInBypassEnabled' => true
+            ],
+            'participants' => [
+                'organizer' => helper::make_meeting_participant_info($o365user, 'presenter'),
+                'attendees' => helper::make_attendee_list($context, $organiserid)
+            ],
+            'subject' => format_string($teammeeting->name, true, ['context' => $context])
+        ];
+        if (!$teammeeting->reusemeeting) {
+            $meetingdata = array_merge($meetingdata, [
+                'startDateTime' => (new DateTimeImmutable("@{$teammeeting->opendate}",
+                    new DateTimeZone('UTC')))->format('Y-m-d\TH:i:s\Z'),
+                'endDateTime' => (new DateTimeImmutable("@{$teammeeting->closedate}",
+                    new DateTimeZone('UTC')))->format('Y-m-d\TH:i:s\Z'),
+                // Disable broadcast (live) events, out-of-time access will be controlled in Moodle.
+                // 'isBroadcast' => true,
+            ]);
+        }
+
+        $resp = $api->apicall('POST', '/users/' . $o365user->objectid . '/onlineMeetings', json_encode($meetingdata));
+        $result = $api->process_apicall_response($resp, [
+            'id' => null,
+            'startDateTime' => null,
+            'endDateTime' => null,
+            'joinWebUrl' => null,
+        ]);
+        $meetingid = $result['id'];
+        $joinurl = $result['joinWebUrl'];
+
+        // Update the activity details.
+        $data = (object) [
+            'id' => $teammeeting->id,
+            'lastpresenterssync' => time(),
+            'onlinemeetingid' => $meetingid,
+            'externalurl' => $joinurl,
+        ];
+        $DB->update_record('teammeeting', $data);
+
+        // Apply changes to the original object.
+        foreach ($data as $key => $value) {
+            $teammeeting->{$key} = $value;
+        }
+    }
 
     /**
      * Make the list of attendees.
@@ -91,12 +165,12 @@ class helper {
 
         $meetingdata = [
             'participants' => [
-                'attendees' => helper::make_attendee_list($context, $teammeeting->usermodified)
+                'attendees' => helper::make_attendee_list($context, $teammeeting->organiserid)
             ]
         ];
 
         $api = $manager->get_api();
-        $o365user = \local_o365\obj\o365user::instance_from_muserid($teammeeting->usermodified);
+        $o365user = \local_o365\obj\o365user::instance_from_muserid($teammeeting->organiserid);
         $meetingid = $teammeeting->onlinemeetingid;
         $resp = $api->apicall('PATCH', "/users/{$o365user->objectid}/onlineMeetings/{$meetingid}", json_encode($meetingdata));
         $api->process_apicall_response($resp, []);

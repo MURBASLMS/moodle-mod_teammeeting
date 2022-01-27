@@ -80,48 +80,11 @@ function teammeeting_add_instance($data, $mform) {
     $data->intro = $data->intro;
     $data->introformat = $data->introformat;
     $data->timemodified = time();
-
-    // Creating the meeting at Microsoft.
-    $o365user = $manager->get_o365_user($USER->id);
-    $api = $manager->get_api();
-    $meetingdata = [
-        'allowedPresenters' => 'roleIsPresenter',
-        'autoAdmittedUsers' => 'everyone',
-        'lobbyBypassSettings' => [
-            'scope' => 'everyone',
-            'isDialInBypassEnabled' => true
-        ],
-        'participants' => [
-            'organizer' => helper::make_meeting_participant_info($o365user, 'presenter'),
-            'attendees' => helper::make_attendee_list($context, $USER->id)
-        ],
-        'subject' => format_string($data->name, true, ['context' => $context])
-    ];
-    if (!$data->reusemeeting) {
-        $meetingdata = array_merge($meetingdata, [
-            'startDateTime' => (new DateTimeImmutable("@{$data->opendate}", new DateTimeZone('UTC')))->format('Y-m-d\TH:i:s\Z'),
-            'endDateTime' => (new DateTimeImmutable("@{$data->closedate}", new DateTimeZone('UTC')))->format('Y-m-d\TH:i:s\Z'),
-            // Disable broadcast (live) events, out-of-time access will be controlled in Moodle.
-            // 'isBroadcast' => true,
-        ]);
-    }
-
-    $resp = $api->apicall('POST', '/users/' . $o365user->objectid . '/onlineMeetings', json_encode($meetingdata));
-    $result = $api->process_apicall_response($resp, [
-        'id' => null,
-        'startDateTime' => null,
-        'endDateTime' => null,
-        'joinWebUrl' => null,
-    ]);
-    $meetingid = $result['id'];
-    $joinurl = $result['joinWebUrl'];
-
-    // Creating the activity.
-    $data->lastpresenterssync = time();
-    $data->onlinemeetingid = $meetingid;
-    $data->externalurl = $joinurl;
     $data->usermodified = $USER->id;
+    $data->organiserid = $USER->id;
     $data->id = $DB->insert_record('teammeeting', $data);
+
+    helper::create_onlinemeeting_instance($data);
 
     // Create the calendar events.
     teammeeting_set_events($data);
@@ -137,7 +100,7 @@ function teammeeting_add_instance($data, $mform) {
  * @return bool Whether the update was successful.
  */
 function teammeeting_update_instance($data, $mform) {
-    global $DB, $COURSE;
+    global $DB, $COURSE, $USER;
 
     $context = context_course::instance($COURSE->id);
     $manager = manager::get_instance();
@@ -146,16 +109,17 @@ function teammeeting_update_instance($data, $mform) {
     $data->name = $data->name;
     $data->intro = $data->intro;
     $data->introformat = $data->introformat;
+    $data->usermodified = $USER->id;
     $data->timemodified = time();
 
     $team = $DB->get_record('teammeeting', ['id' => $data->instance]);
     $requiresupdate = $team->opendate != $data->opendate || $team->closedate != $data->closedate || $team->name != $data->name;
 
     if ($requiresupdate) {
-        $manager->require_is_o365_user($team->usermodified);
+        $manager->require_is_o365_user($team->organiserid);
 
         // Updating the meeting at Microsoft.
-        $o365user = $manager->get_o365_user($team->usermodified);
+        $o365user = $manager->get_o365_user($team->organiserid);
         $api = $manager->get_api();
         $meetingdata = [
             'subject' => format_string($data->name, true, ['context' => $context]),
@@ -213,8 +177,8 @@ function teammeeting_delete_instance($id) {
     // strategy would be to create a new meeting upon restore but that has broader implications.
     if (false) {
         $manager = manager::get_instance();
-        if ($manager->is_available() && $manager->is_o365_user($team->usermodified)) {
-            $o365user = $manager->get_o365_user($team->usermodified);
+        if ($manager->is_available() && $manager->is_o365_user($team->organiserid)) {
+            $o365user = $manager->get_o365_user($team->organiserid);
             $api = $manager->get_api();
             $meetingid = $team->onlinemeetingid;
             $api->apicall('DELETE', "/users/{$o365user->objectid}/onlineMeetings/{$meetingid}");
