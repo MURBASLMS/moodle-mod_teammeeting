@@ -50,5 +50,19 @@ function xmldb_teammeeting_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2022011003, 'teammeeting');
     }
 
+    if ($oldversion < 2022012700) {
+
+        // Rename field creatorid on table teammeeting to usermodified.
+        $table = new xmldb_table('teammeeting');
+        $field = new xmldb_field('creatorid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null, 'timemodified');
+
+        // Launch rename field creatorid.
+        $dbman->rename_field($table, $field, 'usermodified');
+
+        // Teammeeting savepoint reached.
+        upgrade_mod_savepoint(true, 2022012700, 'teammeeting');
+    }
+
+
     return true;
 }

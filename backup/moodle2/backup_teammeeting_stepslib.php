@@ -43,14 +43,14 @@ class backup_teammeeting_activity_structure_step extends backup_activity_structu
         // Define each element separated.
         $teammeeting = new backup_nested_element('teammeeting', ['id'], [
             'name', 'intro', 'introformat', 'externalurl', 'opendate', 'closedate',
-            'onlinemeetingid', 'creatorid', 'reusemeeting', 'timemodified'
+            'onlinemeetingid', 'usermodified', 'reusemeeting', 'timemodified'
         ]);
 
         // Define sources.
         $teammeeting->set_source_table('teammeeting', array('id' => backup::VAR_ACTIVITYID));
 
         // Define ID annotations.
-        $teammeeting->annotate_ids('user', 'creatorid');
+        $teammeeting->annotate_ids('user', 'usermodified');
 
         // Define file annotations.
         $teammeeting->annotate_files('mod_teammeeting', 'intro', null);

@@ -91,12 +91,12 @@ class helper {
 
         $meetingdata = [
             'participants' => [
-                'attendees' => helper::make_attendee_list($context, $teammeeting->creatorid)
+                'attendees' => helper::make_attendee_list($context, $teammeeting->usermodified)
             ]
         ];
 
         $api = $manager->get_api();
-        $o365user = \local_o365\obj\o365user::instance_from_muserid($teammeeting->creatorid);
+        $o365user = \local_o365\obj\o365user::instance_from_muserid($teammeeting->usermodified);
         $meetingid = $teammeeting->onlinemeetingid;
         $resp = $api->apicall('PATCH', "/users/{$o365user->objectid}/onlineMeetings/{$meetingid}", json_encode($meetingdata));
         $api->process_apicall_response($resp, []);

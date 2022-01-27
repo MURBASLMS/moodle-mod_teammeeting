@@ -120,7 +120,7 @@ function teammeeting_add_instance($data, $mform) {
     $data->lastpresenterssync = time();
     $data->onlinemeetingid = $meetingid;
     $data->externalurl = $joinurl;
-    $data->creatorid = $USER->id;
+    $data->usermodified = $USER->id;
     $data->id = $DB->insert_record('teammeeting', $data);
 
     // Create the calendar events.
@@ -152,10 +152,10 @@ function teammeeting_update_instance($data, $mform) {
     $requiresupdate = $team->opendate != $data->opendate || $team->closedate != $data->closedate || $team->name != $data->name;
 
     if ($requiresupdate) {
-        $manager->require_is_o365_user($team->creatorid);
+        $manager->require_is_o365_user($team->usermodified);
 
         // Updating the meeting at Microsoft.
-        $o365user = $manager->get_o365_user($team->creatorid);
+        $o365user = $manager->get_o365_user($team->usermodified);
         $api = $manager->get_api();
         $meetingdata = [
             'subject' => format_string($data->name, true, ['context' => $context]),
@@ -213,8 +213,8 @@ function teammeeting_delete_instance($id) {
     // strategy would be to create a new meeting upon restore but that has broader implications.
     if (false) {
         $manager = manager::get_instance();
-        if ($manager->is_available() && $manager->is_o365_user($team->creatorid)) {
-            $o365user = $manager->get_o365_user($team->creatorid);
+        if ($manager->is_available() && $manager->is_o365_user($team->usermodified)) {
+            $o365user = $manager->get_o365_user($team->usermodified);
             $api = $manager->get_api();
             $meetingid = $team->onlinemeetingid;
             $api->apicall('DELETE', "/users/{$o365user->objectid}/onlineMeetings/{$meetingid}");
