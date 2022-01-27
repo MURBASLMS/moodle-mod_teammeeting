@@ -1,6 +1,13 @@
 Changelog
 =========
 
+v1.2.0
+------
+
+- Online meeting instance no longer created when instance is added to course
+- Online meeting organiser defined on-demand on first access to activity
+- Backup & restore re-implemented without restoring online meeting information
+
 v1.1.0
 ------
 
