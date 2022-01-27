@@ -81,10 +81,7 @@ function teammeeting_add_instance($data, $mform) {
     $data->introformat = $data->introformat;
     $data->timemodified = time();
     $data->usermodified = $USER->id;
-    $data->organiserid = $USER->id;
     $data->id = $DB->insert_record('teammeeting', $data);
-
-    helper::create_onlinemeeting_instance($data);
 
     // Create the calendar events.
     teammeeting_set_events($data);
@@ -115,7 +112,7 @@ function teammeeting_update_instance($data, $mform) {
     $team = $DB->get_record('teammeeting', ['id' => $data->instance]);
     $requiresupdate = $team->opendate != $data->opendate || $team->closedate != $data->closedate || $team->name != $data->name;
 
-    if ($requiresupdate) {
+    if ($requiresupdate && !empty($team->organiserid) && !empty($team->onlinemeetingid)) {
         $manager->require_is_o365_user($team->organiserid);
 
         // Updating the meeting at Microsoft.

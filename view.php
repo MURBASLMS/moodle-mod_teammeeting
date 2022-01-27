@@ -52,10 +52,13 @@ $PAGE->set_heading($course->fullname);
 $PAGE->set_activity_record($resource);
 
 $canmanage = has_capability('mod/teammeeting:addinstance', $context);
+$canpresent = has_capability('mod/teammeeting:presentmeeting', $context);
 $courseurl = new moodle_url('/course/view.php', array('id' => $cm->course));
+$shoulddisplaylobby = empty($resource->organiserid);
 $meetingurl = $resource->externalurl;
 
-// Once off online meeting.
+// If it's a once off online meeting, and we're not within the open dates,
+// advise students to come back at a later time.
 if (!$resource->reusemeeting) {
     $isclosed = $resource->opendate > time() || $resource->closedate < time();
     if (!$canmanage && $isclosed) {
@@ -65,6 +68,7 @@ if (!$resource->reusemeeting) {
     }
 }
 
+// Broadcast module viewed event.
 $event = \mod_teammeeting\event\course_module_viewed::create([
     'context' => $context,
     'objectid' => $resource->id
@@ -74,9 +78,29 @@ $event->add_record_snapshot('course', $course);
 $event->add_record_snapshot('teammeeting', $resource);
 $event->trigger();
 
-// Update 'viewed' state if required by completion system.
+// Mark activity has having been viewed.
 $completion = new completion_info($course);
 $completion->set_module_viewed($cm);
+
+// Wait, the meeting has not yet been created, so we display the lobby.
+// From the lobby, users will be automatically redirected to the meeting
+// without cycling back through this page.
+if ($shoulddisplaylobby) {
+    echo $OUTPUT->header();
+    echo $OUTPUT->heading(format_string($resource->name), 2);
+    if (!empty($resource->intro)) {
+        echo $OUTPUT->box(format_module_intro('teammeeting', $resource, $cm->id), 'generalbox', 'intro');
+    }
+    echo teammeeting_print_details_dates($resource);
+
+    echo $OUTPUT->render_from_template('mod_teammeeting/lobby', [
+        'canpresent' => $canpresent,
+        'teammeetingid' => $resource->id,
+    ]);
+
+    echo $OUTPUT->footer();
+    die();
+}
 
 // Update the list of presenters. We do not need to do this for meetings that have an
 // end date, but that is already filtered above. In all other cases, it's best that we

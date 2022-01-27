@@ -15,17 +15,29 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version.
+ * External services.
  *
  * @package    mod_teammeeting
- * @copyright  2020 Université Clermont Auvergne
+ * @copyright  2022 Murdoch University
+ * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+defined('MOODLE_INTERNAL') || die;
 
-$plugin->version   = 2022012705;
-$plugin->requires  = 2020061500;    // Moodle 3.9.0.
-$plugin->component = 'mod_teammeeting';
-$plugin->release   = 'v1.1.0';
-$plugin->maturity  = MATURITY_STABLE;
+$functions = [
+    'mod_teammeeting_is_meeting_ready' => [
+        'classname' => 'mod_teammeeting\\external',
+        'methodname' => 'is_meeting_ready',
+        'description' => 'Returns whether a meeting is ready.',
+        'type' => 'read',
+        'ajax' => true
+    ],
+    'mod_teammeeting_nominate_organiser' => [
+        'classname' => 'mod_teammeeting\\external',
+        'methodname' => 'nominate_organiser',
+        'description' => 'Nominate the meeting organiser.',
+        'type' => 'write',
+        'ajax' => true
+    ],
+];

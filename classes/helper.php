@@ -158,6 +158,12 @@ class helper {
      * @param object $teammeeting The team meeting record.
      */
     public static function update_teammeeting_instance_attendees($teammeeting) {
+        if (empty($teammeeting->onlinemeetingid)) {
+            throw new \coding_exception('The meeting instance has not yet been created.');
+        } else if (empty($teammeeting->organiserid)) {
+            throw new \coding_exception('The organiser ID is not specified.');
+        }
+
         $courseid = $teammeeting->course;
         $context = context_course::instance($courseid);
         $manager = manager::get_instance();
