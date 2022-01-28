@@ -54,7 +54,6 @@ $PAGE->set_activity_record($resource);
 $canmanage = has_capability('mod/teammeeting:addinstance', $context);
 $canpresent = has_capability('mod/teammeeting:presentmeeting', $context);
 $courseurl = new moodle_url('/course/view.php', array('id' => $cm->course));
-$shoulddisplaylobby = empty($resource->organiserid);
 $meetingurl = $resource->externalurl;
 
 // If it's a once off online meeting, and we're not within the open dates,
@@ -82,10 +81,19 @@ $event->trigger();
 $completion = new completion_info($course);
 $completion->set_module_viewed($cm);
 
-// Wait, the meeting has not yet been created, so we display the lobby.
+// Hmm... the meeting has not yet been created but we have an organiser. A possible reason
+// for this to is that the meeting creation failed after an organiser was assigned.
+// In order to expose the error, we will attempt to recreate the meeting here, but only
+// if the user can manage or present the meeting. Students should fallback in the lobby.
+if (!empty($resource->organiserid) && empty($meetingurl) && ($canmanage || $canpresent)) {
+    helper::create_onlinemeeting_instance($resource);
+    $meetingurl = $resource->externalurl;
+}
+
+// Wait, the meeting does not have an organiser yet (or meeting), we display the lobby.
 // From the lobby, users will be automatically redirected to the meeting
 // without cycling back through this page.
-if ($shoulddisplaylobby) {
+if (empty($resource->organiserid) || empty($meetingurl)) {
     echo $OUTPUT->header();
     echo $OUTPUT->heading(format_string($resource->name), 2);
     if (!empty($resource->intro)) {
