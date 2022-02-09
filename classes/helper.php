@@ -116,6 +116,18 @@ class helper {
     }
 
     /**
+     * Get the list of students in a context.
+     *
+     * @param context $context The context.
+     */
+    public static function get_student_ids(context $context) {
+        $studentroleids = array_keys(get_archetype_roles('student'));
+        return array_values(array_unique(array_map(function($record) {
+            return $record->userid;
+        }, get_role_users($studentroleids, $context, false, 'ra.id, u.id AS userid', 'u.id ASC'))));
+    }
+
+    /**
      * Make the list of attendees.
      *
      * @param context $context The context of the meeting.
@@ -123,16 +135,33 @@ class helper {
      */
     public static function make_attendee_list(context $context, $organiserid) {
         $manager = manager::get_instance();
+        $skipusers = array_flip([$organiserid]);
+
+        // Construct the list of presenters.
         $presenterids = utils::limit_to_o365_users(
             array_keys(get_users_by_capability($context, 'mod/teammeeting:presentmeeting', 'u.id'))
         );
-        // Mandatory use of array_values to drop the keys.
-        return array_values(array_filter(array_map(function($userid) use ($manager, $organiserid) {
-            if ($userid == $organiserid) {
-                return null; // The organiser is already an attendee.
+        $presenters = array_filter(array_map(function($userid) use ($manager, $skipusers) {
+            if (array_key_exists($userid, $skipusers)) {
+                return null; // The user is already an attendee.
             }
             return helper::make_meeting_participant_info($manager->get_o365_user($userid), 'presenter');
-        }, $presenterids)));
+        }, $presenterids));
+
+        // Mark all presenters to be skipped as already considered.
+        $skipusers += array_flip($presenterids);
+
+        // Construct the list of regular attendees.
+        $attendeeids = utils::limit_to_o365_users(static::get_student_ids($context));
+        $attendees = array_filter(array_map(function($userid) use ($manager, $skipusers) {
+            if (array_key_exists($userid, $skipusers)) {
+                return null; // The user is already an attendee.
+            }
+            return helper::make_meeting_participant_info($manager->get_o365_user($userid), 'attendee');
+        }, $attendeeids));
+
+        // Mandatory use of array_values to drop the keys.
+        return array_values(array_merge($presenters, $attendees));
     }
 
     /**
