@@ -126,12 +126,13 @@ class helper {
         $presenterids = utils::limit_to_o365_users(
             array_keys(get_users_by_capability($context, 'mod/teammeeting:presentmeeting', 'u.id'))
         );
-        return array_filter(array_map(function($userid) use ($manager, $organiserid) {
+        // Mandatory use of array_values to drop the keys.
+        return array_values(array_filter(array_map(function($userid) use ($manager, $organiserid) {
             if ($userid == $organiserid) {
                 return null; // The organiser is already an attendee.
             }
             return helper::make_meeting_participant_info($manager->get_o365_user($userid), 'presenter');
-        }, $presenterids));
+        }, $presenterids)));
     }
 
     /**
