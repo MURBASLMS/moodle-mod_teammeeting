@@ -1,6 +1,11 @@
 Changelog
 =========
 
+v1.2.1
+------
+
+- Online meeting could not be created with presenters in some cases
+
 v1.2.0
 ------
 
