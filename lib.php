@@ -110,15 +110,10 @@ function teammeeting_update_instance($data, $mform) {
     $team = $DB->get_record('teammeeting', ['id' => $data->instance]);
     $requiresupdate = $team->opendate != $data->opendate || $team->closedate != $data->closedate || $team->name != $data->name;
 
-    if ($requiresupdate && !empty($team->organiserid) && !empty($team->onlinemeetingid)) {
-        $manager->require_is_o365_user($team->organiserid);
+    if ($requiresupdate) {
 
-        // Updating the meeting at Microsoft.
-        $o365user = $manager->get_o365_user($team->organiserid);
         $api = $manager->get_api();
-        $meetingdata = [
-            'subject' => format_string($data->name, true, ['context' => $context]),
-        ];
+        $meetingdata = ['subject' => format_string($data->name, true, ['context' => $context])];
         if (!$data->reusemeeting) {
             $meetingdata = array_merge($meetingdata, [
                 'startDateTime' => (new DateTimeImmutable("@{$data->opendate}", new DateTimeZone('UTC')))->format('Y-m-d\TH:i:s\Z'),
@@ -126,15 +121,24 @@ function teammeeting_update_instance($data, $mform) {
             ]);
         }
 
-        // Note that attendees (presenters) do not need updating, they are periodically updated when the meeting page is viewed.
-        $meetingid = $team->onlinemeetingid;
-        $resp = $api->apicall('PATCH', "/users/{$o365user->objectid}/onlineMeetings/{$meetingid}", json_encode($meetingdata));
-        $api->process_apicall_response($resp, [
-            'id' => null,
-            'startDateTime' => null,
-            'endDateTime' => null,
-            'joinWebUrl' => null,
-        ]);
+        // Retrieving all meeting instances.
+        $meetings = $DB->get_records_select('teammeeting_meetings',
+            'teammeetingid = ? AND onlinemeetingid IS NOT NULL AND organiserid IS NOT NULL', [$team->id]);
+
+        // Updating the meetings at Microsoft.
+        foreach ($meetings as $meeting) {
+            $o365user = $manager->get_o365_user($meeting->organiserid);
+
+            // Note that attendees (presenters) do not need updating, they are periodically updated when the meeting page is viewed.
+            $meetingid = $meeting->onlinemeetingid;
+            $resp = $api->apicall('PATCH', "/users/{$o365user->objectid}/onlineMeetings/{$meetingid}", json_encode($meetingdata));
+            $api->process_apicall_response($resp, [
+                'id' => null,
+                'startDateTime' => null,
+                'endDateTime' => null,
+                'joinWebUrl' => null,
+            ]);
+        }
     }
 
 
