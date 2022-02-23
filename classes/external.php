@@ -29,6 +29,7 @@ use context_course;
 use external_function_parameters;
 use external_single_structure;
 use external_value;
+use moodle_exception;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -49,7 +50,8 @@ class external extends \external_api {
      */
     public static function is_meeting_ready_parameters() {
         return new external_function_parameters([
-            'teammeetingid' => new external_value(PARAM_INT)
+            'teammeetingid' => new external_value(PARAM_INT),
+            'groupid' => new external_value(PARAM_INT),
         ]);
     }
 
@@ -58,19 +60,25 @@ class external extends \external_api {
      *
      * @return external_value
      */
-    public static function is_meeting_ready($teammeetingid) {
-        global $DB;
+    public static function is_meeting_ready($teammeetingid, $groupid) {
+        global $DB, $USER;
 
-        $params = static::validate_parameters(static::is_meeting_ready_parameters(), ['teammeetingid' => $teammeetingid]);
+        $params = static::validate_parameters(static::is_meeting_ready_parameters(), ['teammeetingid' => $teammeetingid,
+            'groupid' => $groupid]);
         $teammeetingid = $params['teammeetingid'];
+        $groupid = $params['groupid'];
 
         $teammeeting = $DB->get_record('teammeeting', ['id' => $teammeetingid], '*', MUST_EXIST);
         $context = context_course::instance($teammeeting->course);
 
         static::validate_context($context);
         require_capability('mod/teammeeting:view', $context);
+        if (!helper::can_access_group($teammeeting, $USER, $groupid)) {
+            throw new moodle_exception('cannotaccessgroup', 'mod_teammeeting');
+        }
 
-        $isready = !empty($teammeeting->externalurl);
+        $meeting = helper::get_meeting_record($teammeeting, $groupid);
+        $isready = !empty($meeting->meetingurl);
 
         // If the meeting is a once off and the user cannot manage the activity, we present
         // that the meeting is not ready otherwise the user could retrieve the meeting URL early.
@@ -84,7 +92,7 @@ class external extends \external_api {
 
         return [
             'isready' => $isready,
-            'externalurl' => $isready ? $teammeeting->externalurl : null,
+            'externalurl' => $isready ? $meeting->meetingurl : null,
         ];
     }
 
@@ -107,7 +115,8 @@ class external extends \external_api {
      */
     public static function nominate_organiser_parameters() {
         return new external_function_parameters([
-            'teammeetingid' => new external_value(PARAM_INT)
+            'teammeetingid' => new external_value(PARAM_INT),
+            'groupid' => new external_value(PARAM_INT)
         ]);
     }
 
@@ -116,11 +125,13 @@ class external extends \external_api {
      *
      * @return external_value
      */
-    public static function nominate_organiser($teammeetingid) {
+    public static function nominate_organiser($teammeetingid, $groupid) {
         global $DB, $USER;
 
-        $params = static::validate_parameters(static::nominate_organiser_parameters(), ['teammeetingid' => $teammeetingid]);
+        $params = static::validate_parameters(static::nominate_organiser_parameters(), ['teammeetingid' => $teammeetingid,
+            'groupid' => $groupid]);
         $teammeetingid = $params['teammeetingid'];
+        $groupid = $params['groupid'];
         $organiserid = $USER->id; // Presently we always nominate ourselves, but this could be changed.
         $manager = manager::get_instance();
         $manager->require_is_available();
@@ -133,9 +144,14 @@ class external extends \external_api {
         if (!has_any_capability(['mod/teammeeting:presentmeeting', 'mod/teammeeting:addinstance'], $context)) {
             require_capability('mod/teammeeting:presentmeeting', $context);
         }
+        if (!helper::can_access_group($teammeeting, $USER, $groupid)) {
+            throw new moodle_exception('cannotaccessgroup', 'mod_teammeeting');
+        }
+
+        $meeting = helper::get_meeting_record($teammeeting, $groupid);
 
         // Validate the state of the meeting.
-        if (!empty($teammeeting->organiserid)) {
+        if (!empty($meeting->organiserid)) {
             throw new \moodle_exception('organiseralreadyset', 'mod_teammeeting');
         }
 
@@ -144,21 +160,17 @@ class external extends \external_api {
         $manager->require_is_o365_user($organiserid);
 
         // Assign the organiser (and reset other fields).
-        $data = (object) [
-            'id' => $teammeeting->id,
-            'organiserid' => $organiserid,
-            'onlinemeetingid' => null,
-            'externalurl' => null,
-            'lastpresenterssync' => 0,
-        ];
-        $DB->update_record('teammeeting', $data);
-        $teammeeting = (object) array_merge((array) $teammeeting, (array) $data);
+        $meeting->organiserid = $organiserid;
+        $meeting->onlinemeetingid = null;
+        $meeting->meetingurl = null;
+        $meeting->lastpresenterssync = 0;
+        helper::save_meeting_record($meeting);
 
         // Now create the meeting.
-        helper::create_onlinemeeting_instance($teammeeting);
+        $meeting = helper::create_onlinemeeting_instance($teammeeting, $groupid);
 
         return [
-            'externalurl' => $teammeeting->externalurl,
+            'externalurl' => $meeting->meetingurl,
         ];
     }
 

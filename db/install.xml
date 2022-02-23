@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="mod/teammeeting/db" VERSION="20220127" COMMENT="XMLDB file for the resource teammeeting module"
+<XMLDB PATH="mod/teammeeting/db" VERSION="20220223" COMMENT="XMLDB file for the resource teammeeting module"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -26,6 +26,23 @@
       </KEYS>
       <INDEXES>
         <INDEX NAME="course" UNIQUE="false" FIELDS="course"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="teammeeting_meetings" COMMENT="The list of onlineMeeting instances for each instance of the activity.">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="teammeetingid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="groupid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="organiserid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="onlinemeetingid" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="meetingurl" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="lastpresenterssync" TYPE="int" LENGTH="10" NOTNULL="false" DEFAULT="0" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="teammeetingidgroupid" UNIQUE="true" FIELDS="teammeetingid, groupid"/>
       </INDEXES>
     </TABLE>
   </TABLES>

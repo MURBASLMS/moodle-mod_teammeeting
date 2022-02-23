@@ -104,5 +104,34 @@ function xmldb_teammeeting_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2022012703, 'teammeeting');
     }
 
+    if ($oldversion < 2022022300) {
+
+        // Define table teammeeting_meetings to be created.
+        $table = new xmldb_table('teammeeting_meetings');
+
+        // Adding fields to table teammeeting_meetings.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('teammeetingid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('groupid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('organiserid', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
+        $table->add_field('onlinemeetingid', XMLDB_TYPE_TEXT, null, null, null, null, null);
+        $table->add_field('meetingurl', XMLDB_TYPE_TEXT, null, null, null, null, null);
+        $table->add_field('lastpresenterssync', XMLDB_TYPE_INTEGER, '10', null, null, null, '0');
+
+        // Adding keys to table teammeeting_meetings.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+
+        // Adding indexes to table teammeeting_meetings.
+        $table->add_index('teammeetingidgroupid', XMLDB_INDEX_UNIQUE, ['teammeetingid', 'groupid']);
+
+        // Conditionally launch create table for teammeeting_meetings.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Teammeeting savepoint reached.
+        upgrade_mod_savepoint(true, 2022022300, 'teammeeting');
+    }
+
     return true;
 }

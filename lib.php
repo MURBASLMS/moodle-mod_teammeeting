@@ -22,8 +22,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use local_o365\utils;
-use mod_teammeeting\helper;
 use mod_teammeeting\manager;
 
 defined('MOODLE_INTERNAL') || die;
@@ -41,9 +39,9 @@ function teammeeting_supports($feature) {
         case FEATURE_MOD_ARCHETYPE:
             return MOD_ARCHETYPE_RESOURCE;
         case FEATURE_GROUPS:
-            return false;
+            return true;
         case FEATURE_GROUPINGS:
-            return false;
+            return true;
         case FEATURE_MOD_INTRO:
             return true;
         case FEATURE_COMPLETION_TRACKS_VIEWS:
@@ -208,8 +206,6 @@ function teammeeting_get_coursemodule_info($coursemodule) {
         $info->content = format_module_intro('teammeeting', $resource, $coursemodule->id, false);
     }
 
-    $info->customdata = ['fullurl' => $resource->externalurl];
-
     return $info;
 }
 
@@ -270,7 +266,8 @@ function teammeeting_print_details_dates($team, $format = 'html') {
 
         return html_writer::div(
             $OUTPUT->pix_icon('i/info', '', 'core') .
-            $msg
+            $msg,
+            'my-2'
         );
     }
 

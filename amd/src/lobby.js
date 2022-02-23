@@ -25,18 +25,18 @@ import Ajax from 'core/ajax';
 import Notification from 'core/notification';
 import ModalFactory from 'core/modal_factory';
 import ModalEvents from 'core/modal_events';
-import { get_string, get_strings } from 'core/str';
+import {get_string, get_strings} from 'core/str';
 import Templates from 'core/templates';
 
 const READY_CHECK_INTERVAL = 15 * 1000;
 
-const askToBecomePresenter = (teammeetingid) => {
+const askToBecomePresenter = (teammeetingid, groupid) => {
   ModalFactory.create({
     type: ModalFactory.types.SAVE_CANCEL,
     title: get_string('sessionnotready', 'mod_teammeeting'),
     body: get_strings([
-      { key: 'sessionrequiresorganiserinstructions', component: 'mod_teammeeting' },
-      { key: 'whatwouldyouliketodo', component: 'mod_teammeeting' },
+      {key: 'sessionrequiresorganiserinstructions', component: 'mod_teammeeting'},
+      {key: 'whatwouldyouliketodo', component: 'mod_teammeeting'},
     ]).then((strs) => {
       return `<p>${strs[0]}</p><p>${strs[1]}</p>`;
     }),
@@ -51,48 +51,51 @@ const askToBecomePresenter = (teammeetingid) => {
       button.attr('disabled', true);
       modal.asyncSet(Templates.render('core/loading', {}), button.html.bind(button));
 
-      nominateOneselfAndGo(teammeetingid);
+      nominateOneselfAndGo(teammeetingid, groupid);
     });
     modal.show();
-  });
+    return;
+  }).catch(Notification.exception);
 };
 
-const nominateOneselfAndGo = (teammeetingid) => {
+const nominateOneselfAndGo = (teammeetingid, groupid) => {
   Ajax.call([
     {
       methodname: 'mod_teammeeting_nominate_organiser',
-      args: { teammeetingid },
+      args: {teammeetingid, groupid},
     },
   ])[0]
     .then((data) => {
       window.location.href = data.externalurl;
+      return;
     })
     .catch(Notification.exception);
 };
 
-const setupReadyCheck = (teammeetingid) => {
+const setupReadyCheck = (teammeetingid, groupid) => {
   const readyCheck = () => {
     Ajax.call([
       {
         methodname: 'mod_teammeeting_is_meeting_ready',
-        args: { teammeetingid: teammeetingid },
+        args: {teammeetingid, groupid},
       },
     ])[0]
-      .then(function (data) {
+      .then(function(data) {
         if (data.isready) {
           window.location.href = data.externalurl;
           return;
         }
         setTimeout(readyCheck, READY_CHECK_INTERVAL);
+        return;
       })
       .catch(Notification.exception);
   };
   setTimeout(readyCheck, READY_CHECK_INTERVAL);
 };
 
-export const init = (teammeetingid, canpresent) => {
+export const init = (teammeetingid, groupid, canpresent) => {
   if (canpresent) {
-    askToBecomePresenter(teammeetingid);
+    askToBecomePresenter(teammeetingid, groupid);
   }
-  setupReadyCheck(teammeetingid);
+  setupReadyCheck(teammeetingid, groupid);
 };

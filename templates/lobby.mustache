@@ -32,7 +32,8 @@
     Example context (json):
     {
         "canpresent": true,
-        "teammeetingid": 0
+        "teammeetingid": 0,
+        "groupid": 0
     }
 }}
 
@@ -42,7 +43,8 @@
 {{#js}}
 require(['mod_teammeeting/lobby'], function(Lobby) {
     var teammeetingid = {{ teammeetingid }};
+    var groupid = {{ groupid }};
     var canpresent = {{# canpresent }}true{{/canpresent}}{{^ canpresent }}false{{/canpresent}};
-    Lobby.init(teammeetingid, canpresent);
+    Lobby.init(teammeetingid, groupid, canpresent);
 });
 {{/js}}
