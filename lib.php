@@ -170,20 +170,10 @@ function teammeeting_delete_instance($id) {
 
     // All context, files, calendar events, etc... are deleted automatically.
     $DB->delete_records('teammeeting', array('id' => $team->id));
+    $DB->delete_records('teammeeting_meetings', ['teammeetingid' => $team->id]);
 
-    // Attempt to delete at Microsoft. This is temporarily disabled because it currently
-    // conflicts with the ability to duplicate an activity. If an activity is duplicated, and
-    // either copies are deleted, the meeting link will be invalidated for both. The better
-    // strategy would be to create a new meeting upon restore but that has broader implications.
-    if (false) {
-        $manager = manager::get_instance();
-        if ($manager->is_available() && $manager->is_o365_user($team->organiserid)) {
-            $o365user = $manager->get_o365_user($team->organiserid);
-            $api = $manager->get_api();
-            $meetingid = $team->onlinemeetingid;
-            $api->apicall('DELETE', "/users/{$o365user->objectid}/onlineMeetings/{$meetingid}");
-        }
-    }
+    // Should we delete the onlineMeeting instances at Microsoft? There are concerns
+    // as deleting an instance in Moodle could lead to unexpected data loss in Teams.
 
     return true;
 }
