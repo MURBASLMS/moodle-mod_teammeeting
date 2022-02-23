@@ -155,6 +155,11 @@ class external extends \external_api {
             throw new \moodle_exception('organiseralreadyset', 'mod_teammeeting');
         }
 
+        // Validate that the user is not an organiser elsewhere.
+        if ($DB->record_exists('teammeeting_meetings', ['teammeetingid' => $teammeetingid, 'organiserid' => $organiserid])) {
+            throw new \moodle_exception('alreadyorganiserofothersession', 'mod_teammeeting');
+        }
+
         // The organiser must have the permission to present the meeting.
         require_capability('mod/teammeeting:presentmeeting', $context, $organiserid);
         $manager->require_is_o365_user($organiserid);

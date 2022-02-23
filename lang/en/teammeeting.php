@@ -24,6 +24,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+$string['alreadyorganiserofothersession'] = 'Already the organiser of another session.';
 $string['apinotconfigured'] = 'The Microsoft API needs to be configured and enabled in the plugin local_o365. Note that this is incomptaible with the legacy API.';
 $string['back'] = 'Return to course';
 $string['cannotaccessgroup'] = 'Cannot access group';
