@@ -24,6 +24,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+require_once($CFG->dirroot . '/mod/teammeeting/db/upgradelib.php');
+
 /**
  * Upgrade function.
  *
@@ -131,6 +133,15 @@ function xmldb_teammeeting_upgrade($oldversion) {
 
         // Teammeeting savepoint reached.
         upgrade_mod_savepoint(true, 2022022300, 'teammeeting');
+    }
+
+    if ($oldversion < 2022022301) {
+
+        // Migrate to the newly created table.
+        mod_teammeeting_migrate_to_meetings_table();
+
+        // Teammeeting savepoint reached.
+        upgrade_mod_savepoint(true, 2022022301, 'teammeeting');
     }
 
     return true;
