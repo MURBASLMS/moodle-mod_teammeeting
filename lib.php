@@ -22,6 +22,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use mod_teammeeting\helper;
 use mod_teammeeting\manager;
 
 defined('MOODLE_INTERNAL') || die;
@@ -233,20 +234,30 @@ function teammeeting_set_events($team) {
         return;
     }
 
-    // The open-event.
-    $event = new stdClass;
-    $event->name = $team->name;
-    $event->description = $team->name;
-    $event->courseid = $team->course;
-    $event->groupid = 0;
-    $event->userid = 0;
-    $event->modulename = 'teammeeting';
-    $event->instance = $team->id;
-    $event->eventtype = 'open';
-    $event->timestart = $team->opendate;
-    $event->visible = instance_is_visible('teammeeting', $team);
-    $event->timeduration = ($team->closedate - $team->opendate);
-    calendar_event::create($event);
+    // Retrieve the group IDs.
+    $groupids = [0];
+    $cm = helper::get_cm_info_from_teammeeting($team);
+    if ($cm->effectivegroupmode != NOGROUPS) {
+        $groups = groups_get_all_groups($cm->course, 0, $cm->groupingid, 'g.id');
+        $groupids = array_keys($groups);
+    }
+
+    // Create the event in each group.
+    foreach ($groupids as $groupid) {
+        $event = new stdClass;
+        $event->name = $team->name;
+        $event->description = $team->name;
+        $event->courseid = $team->course;
+        $event->groupid = $groupid;
+        $event->userid = 0;
+        $event->modulename = 'teammeeting';
+        $event->instance = $team->id;
+        $event->eventtype = 'open';
+        $event->timestart = $team->opendate;
+        $event->visible = instance_is_visible('teammeeting', $team);
+        $event->timeduration = ($team->closedate - $team->opendate);
+        calendar_event::create($event);
+    }
 }
 
 /**
