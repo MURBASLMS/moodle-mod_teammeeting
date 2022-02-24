@@ -180,7 +180,7 @@ if ($groupid === null) {
 // Get the meeting record for this group.
 $meeting = helper::get_meeting_record($resource, $groupid);
 $meetingurl = $meeting->meetingurl;
-$canpresentingroup = $canpresent && ($groupmode != SEPARATEGROUPS || array_key_exists($groupid, $usergroups));
+$canpresentingroup = $canpresent && ($groupmode != SEPARATEGROUPS || $aag || array_key_exists($groupid, $usergroups));
 
 // Hmm... the meeting has not yet been created but we have an organiser. A possible reason
 // for this to is that the meeting creation failed after an organiser was assigned.
