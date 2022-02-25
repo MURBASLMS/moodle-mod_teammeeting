@@ -73,7 +73,7 @@ class external extends \external_api {
 
         static::validate_context($context);
         require_capability('mod/teammeeting:view', $context);
-        if (!helper::can_access_group($teammeeting, $USER, $groupid)) {
+        if (!helper::can_access_group($teammeeting, $USER->id, $groupid)) {
             throw new moodle_exception('cannotaccessgroup', 'mod_teammeeting');
         }
 
