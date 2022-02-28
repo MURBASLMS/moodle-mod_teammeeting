@@ -144,7 +144,7 @@ class external extends \external_api {
         if (!has_any_capability(['mod/teammeeting:presentmeeting', 'mod/teammeeting:addinstance'], $context)) {
             require_capability('mod/teammeeting:presentmeeting', $context);
         }
-        if (!helper::can_access_group($teammeeting, $USER, $groupid)) {
+        if (!helper::can_access_group($teammeeting, $USER->id, $groupid)) {
             throw new moodle_exception('cannotaccessgroup', 'mod_teammeeting');
         }
 
