@@ -44,6 +44,7 @@ $string['modulename_help'] = 'This module creates online meetings with Microsoft
 $string['modulename'] = 'Team meeting';
 $string['modulenameplural'] = 'Team meetings';
 $string['nominatemyself'] = 'Nominate myself';
+$string['noneselected'] = 'None selected';
 $string['noto365user'] = 'Not an O365 user. Has the user linked, or logged in with, their Microsoft 365 account?';
 $string['noto365usercurrent'] = 'Missing permissions. You must link, or login with, your Microsoft 365 account to continue.';
 $string['opendate_help'] = 'The meeting will be set to start at this particular point in time.';
@@ -55,6 +56,12 @@ $string['pleasewait'] = 'Please wait!';
 $string['pluginadministration'] = 'Team meeting administrations';
 $string['pluginname'] = 'Team meeting';
 $string['privacy:metadata'] = 'The plugin does not store or transmit any personal data.';
+$string['restrictedtogroup'] = 'Restricted to group';
+$string['restrictedtogroup_help'] = 'Restrict access to this meeting to a given group.
+
+This settings mostly acts as a shortcut to set other settings such as the "Group mode" and "Restrict access", which will be set automatically.
+
+This setting is also used to generate the list of attendees of the meeting.';
 $string['returntocourse'] = 'Return to the course';
 $string['reusemeeting_help'] = 'The meeting time defines whether the meeting is limited to a time slot, or is available permanently.
 

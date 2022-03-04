@@ -144,5 +144,20 @@ function xmldb_teammeeting_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2022022301, 'teammeeting');
     }
 
+    if ($oldversion < 2022030400) {
+
+        // Define field groupid to be added to teammeeting.
+        $table = new xmldb_table('teammeeting');
+        $field = new xmldb_field('groupid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'reusemeeting');
+
+        // Conditionally launch add field groupid.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Teammeeting savepoint reached.
+        upgrade_mod_savepoint(true, 2022030400, 'teammeeting');
+    }
+
     return true;
 }

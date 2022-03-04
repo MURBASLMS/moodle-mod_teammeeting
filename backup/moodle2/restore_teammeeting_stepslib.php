@@ -58,6 +58,7 @@ class restore_teammeeting_activity_structure_step extends restore_activity_struc
         $data = (object) $data;
         $oldid = $data->id;
         $data->course = $this->get_courseid();
+        $data->groupid = !empty($data->groupid) ? $this->get_mappingid('group', $data->groupid, 0) : 0;
         $data->usermodified = $this->get_mappingid('user', $data->usermodified, $USER->id);
 
         // Note that restored activities do not restore their associated online meetings.

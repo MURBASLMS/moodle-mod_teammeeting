@@ -78,6 +78,7 @@ function teammeeting_add_instance($data, $mform) {
     $data->name = $data->name;
     $data->intro = $data->intro;
     $data->introformat = $data->introformat;
+    $data->groupid = $data->groupid;
     $data->timemodified = time();
     $data->usermodified = $USER->id;
     $data->id = $DB->insert_record('teammeeting', $data);
@@ -105,6 +106,7 @@ function teammeeting_update_instance($data, $mform) {
     $data->name = $data->name;
     $data->intro = $data->intro;
     $data->introformat = $data->introformat;
+    $data->groupid = $data->groupid;
     $data->usermodified = $USER->id;
     $data->timemodified = time();
 
@@ -227,7 +229,9 @@ function teammeeting_set_events($team) {
     // Retrieve the group IDs.
     $groupids = [0];
     $cm = helper::get_cm_info_from_teammeeting($team);
-    if ($cm->effectivegroupmode != NOGROUPS) {
+    if (!empty($team->groupid)) {
+        $groupids = [$team->groupid];
+    } else if ($cm->effectivegroupmode != NOGROUPS) {
         $groups = groups_get_all_groups($cm->course, 0, $cm->groupingid, 'g.id');
         $groupids = array_keys($groups);
     }

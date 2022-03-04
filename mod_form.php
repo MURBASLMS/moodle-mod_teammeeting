@@ -109,8 +109,26 @@ class mod_teammeeting_mod_form extends moodleform_mod {
         $mform->hideIf('opendate', 'reusemeeting', 'eq', 1);
         $mform->hideIf('closedate', 'reusemeeting', 'eq', 1);
 
+        // Group restriction.
+        $groups = ['' => get_string('noneselected', 'mod_teammeeting')] + array_map(function($group) {
+            return $group->name;
+        }, groups_get_all_groups($this->get_course()->id));
+        $mform->addElement('autocomplete', 'groupid', get_string('restrictedtogroup', 'mod_teammeeting'), $groups, [
+            'noselectionstring' => get_string('noneselected', 'mod_teammeeting')
+        ]);
+        $mform->addHelpButton('groupid', 'restrictedtogroup', 'mod_teammeeting');
+        $mform->setDefault('groupid', '');
+        $mform->disabledIf('groupmode', 'groupid', 'neq', '');
+        $mform->hideIf('groupingid', 'groupid', 'neq', '');
+
         $this->standard_coursemodule_elements();
         $this->add_action_buttons();
+
+        // That button is adding confusion, and it's not required for us because
+        // we emulate its behaviour via our groupid field.
+        if ($mform->elementExists('restrictgroupbutton')) {
+            $mform->removeElement('restrictgroupbutton');
+        }
     }
 
     /**
@@ -176,6 +194,19 @@ class mod_teammeeting_mod_form extends moodleform_mod {
             // A non-permanent meeting should be given a close date if none.
             $endtime = (new DateTimeImmutable('@' . $data->opendate))->add(new DateInterval("PT{$defaultduration}S"));
             $data->closedate = $endtime->getTimestamp();
+        }
+
+        // Convert empty strings to 0.
+        $data->groupid = (int) $data->groupid;
+
+        // When our group ID is used, we hardcode other settings.
+        if ($data->groupid > 0) {
+            // We set to separate groups to trigger the various validation that is expected based on
+            // groups. More specifically, to access the activity the user should either belong to
+            // the group, or has the capability to access all groups. We do that even though we
+            // will set a restrict access rule preventing other groups from accessing the activity.
+            $data->groupmode = SEPARATEGROUPS;
+            $data->groupingid = 0;
         }
     }
 
