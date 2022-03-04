@@ -72,6 +72,21 @@ if (!$resource->reusemeeting) {
     }
 }
 
+// When the activity is specifically restricted to a single group, emulate user having chosen it.
+if (!empty($resource->groupid)) {
+    $groupid = $resource->groupid;
+}
+
+// If the user cannot access the group provided.
+if ($groupid !== null && !helper::can_access_group($resource, $USER->id, $groupid)) {
+    if (!empty($resource->groupid)) {
+        // The group is forced at the activity level, we cannot continue.
+        throw new moodle_exception('cannotaccessgroup', 'mod_teammeeting');
+    }
+    // Reset the group ID to let the default behaviour take place.
+    $groupid = null;
+}
+
 // Broadcast module viewed event.
 $event = \mod_teammeeting\event\course_module_viewed::create([
     'context' => $context,
@@ -85,11 +100,6 @@ $event->trigger();
 // Mark activity has having been viewed.
 $completion = new completion_info($course);
 $completion->set_module_viewed($cm);
-
-// If the user cannot access the group provided, reset the group ID to let the default behaviour take place.
-if ($groupid !== null && !helper::can_access_group($resource, $USER->id, $groupid)) {
-    $groupid = null;
-}
 
 // Identify the meeting, via the group mode.
 $aag = has_capability('moodle/site:accessallgroups', $context);

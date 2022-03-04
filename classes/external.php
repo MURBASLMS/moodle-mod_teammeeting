@@ -71,6 +71,11 @@ class external extends \external_api {
         $teammeeting = $DB->get_record('teammeeting', ['id' => $teammeetingid], '*', MUST_EXIST);
         $context = context_course::instance($teammeeting->course);
 
+        // Force the group ID, when set against the activity.
+        if (!empty($teammeeting->groupid)) {
+            $groupid = $teammeeting->groupid;
+        }
+
         static::validate_context($context);
         require_capability('mod/teammeeting:view', $context);
         if (!helper::can_access_group($teammeeting, $USER->id, $groupid)) {
@@ -139,6 +144,11 @@ class external extends \external_api {
         $teammeeting = $DB->get_record('teammeeting', ['id' => $teammeetingid], '*', MUST_EXIST);
         $context = context_course::instance($teammeeting->course);
         static::validate_context($context);
+
+        // Force the group ID, when set against the activity.
+        if (!empty($teammeeting->groupid)) {
+            $groupid = $teammeeting->groupid;
+        }
 
         // The acting user must have the permission to present, or to manage the instance to assign the organiser.
         if (!has_any_capability(['mod/teammeeting:presentmeeting', 'mod/teammeeting:addinstance'], $context)) {
