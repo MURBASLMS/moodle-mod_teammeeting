@@ -207,7 +207,87 @@ class mod_teammeeting_mod_form extends moodleform_mod {
             // will set a restrict access rule preventing other groups from accessing the activity.
             $data->groupmode = SEPARATEGROUPS;
             $data->groupingid = 0;
+            $data->availabilityconditionsjson = $this->construct_availability_conditions_json($data);
         }
+
+    }
+
+    /**
+     * Construct the availability conditions JSON.
+     *
+     * This attempts to automatically add a restrict access condition based on the group
+     * that was set (if any). This will not inject itself in complex restrict access
+     * condition trees, and will silently handle failures.
+     *
+     * @param object $data The submitted data.
+     */
+    protected function construct_availability_conditions_json($data) {
+        global $CFG;
+
+        $origvalue = !empty($data->availabilityconditionsjson) ? $data->availabilityconditionsjson : '';
+        if (empty($CFG->enableavailability)) {
+            return $origvalue;
+        } else if (empty($data->groupid)) {
+            return $origvalue;
+        }
+
+        $groupconditionenabled = array_key_exists('group', \core\plugininfo\availability::get_enabled_plugins());
+        if (!$groupconditionenabled) {
+            return $origvalue;
+        }
+
+        // The basic structure with just our condition.
+        $structure = (object) [
+            'op' => '&',
+            'c' => [(object) [
+                'type' => 'group',
+                'id' => $data->groupid,
+            ]],
+            'showc' => [false],
+        ];
+
+        // If we received a value, let's see.
+        if (!empty($origvalue)) {
+            $origstructure = json_decode($origvalue);
+            $tree = new \core_availability\tree($origstructure);
+
+            // If the tree is not empty, let's add our condition to it there is no group
+            // condition in there yet. If there is a group condition, or if the operator
+            // is not a plain and simple AND, we do not do anything.
+            if (!$tree->is_empty()) {
+                $structure = clone $origstructure; // First, copy and assume we're not changing anything.
+
+                // Check if we find a group condition at the top level, and if yes apply our group ID.
+                $hasgroup = false;
+                foreach ($structure->c as $condition) {
+                    if (!empty($condition->type) && $condition->type === 'group') {
+                        $condition->id = $data->groupid; // Override in case our group ID changed.
+                        $hasgroup = true;
+                    }
+                }
+
+                // If we have not found our group condition, let's add it.
+                if (!$hasgroup && $structure->op === '&') {
+                    $structure->c[] = (object) [
+                        'type' => 'group',
+                        'id' => $data->groupid,
+                    ];
+                    $structure->showc[] = false;
+                } else if (!$hasgroup) {
+                    debugging('Restrict access structure too advanced to check or modify.', DEBUG_DEVELOPER);
+                }
+            }
+        }
+
+        // Finally, validate the structure, or fallback on the original.
+        try {
+            new \core_availability\tree($structure);
+        } catch (Exception $e) {
+            debugging('Error in generated restrict access tree, reverting to original.', DEBUG_DEVELOPER);
+            return $origvalue;
+        }
+
+        return json_encode($structure);
     }
 
 }

@@ -61,7 +61,9 @@ $string['restrictedtogroup_help'] = 'Restrict access to this meeting to a given 
 
 This settings mostly acts as a shortcut to set other settings such as the "Group mode" and "Restrict access", which will be set automatically.
 
-This setting is also used to generate the list of attendees of the meeting.';
+This setting is also used to generate the list of attendees of the meeting.
+
+Note that you should manually check the values of "Group mode" and "Restrict access" when reverting this setting to "None selected".';
 $string['returntocourse'] = 'Return to the course';
 $string['reusemeeting_help'] = 'The meeting time defines whether the meeting is limited to a time slot, or is available permanently.
 
