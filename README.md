@@ -35,11 +35,11 @@ Whether a user can view the activity and be redirected to the online meeting.
 
 **mod/teammeeting:addinstance**
 
-Whether a user can create an activity. They are permanently flagged as `organizer` of the online meeting.
+Whether a user can create an activity.
 
 **mod/teammeeting:presentmeeting**
 
-Whether a user should be flagged as `presenter` of the online meeting.
+Whether a user can nominate themselves as `organizer` of a meeting. Others users with this capability will be added as `presenter` of the online meeting.
 
 
 Acknowledgment
