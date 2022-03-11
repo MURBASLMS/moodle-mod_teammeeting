@@ -1,6 +1,14 @@
 Changelog
 =========
 
+v1.3.0
+------
+
+- Added CLI to debug an meeting instance
+- Support restricting activity to an individual group
+- Support group mode to enable meetings per group
+- Students included as attendees
+
 v1.2.1
 ------
 
