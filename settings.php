@@ -33,6 +33,6 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_configcheckbox('mod_teammeeting/prefixonlinemeetingname',
         get_string('prefixonlinemeetingname', 'mod_teammeeting'),
         get_string('prefixonlinemeetingname_help', 'mod_teammeeting') ,
-        0,
+        0
     ));
 }
