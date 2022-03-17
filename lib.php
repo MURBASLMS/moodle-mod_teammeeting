@@ -68,9 +68,8 @@ function teammeeting_supports($feature) {
  * @return int The new instance ID.
  */
 function teammeeting_add_instance($data, $mform) {
-    global $DB, $USER, $COURSE;
+    global $DB, $USER;
 
-    $context = context_course::instance($COURSE->id);
     $manager = manager::get_instance();
     $manager->require_is_available();
     $manager->require_is_o365_user($USER->id);
@@ -210,51 +209,34 @@ function teammeeting_get_coursemodule_info($coursemodule) {
 }
 
 /**
+ * Refresh the events.
+ *
+ * @param object $course The course.
+ * @param object $teammeeting The instance.
+ * @param object $cm The cm.
+ */
+function teammeeting_refresh_events($course, $teammeeting, $cm) {
+    helper::update_teammeeting_calendar_events($teammeeting);
+}
+
+/**
  * Add calendar events for the meeting.
  *
- * @param object $team The team data.
+ * @param object $teammeeting The team data.
  */
-function teammeeting_set_events($team) {
-    global $DB;
-
-    if ($events = $DB->get_records('event', array('modulename' => 'teammeeting', 'instance' => $team->id))) {
-        foreach ($events as $event) {
-            $event = calendar_event::load($event);
-            $event->delete();
-        }
-    }
-
-    // We do not create events when we're missing an open or close date.
-    if (!$team->opendate || !$team->closedate) {
+function teammeeting_set_events($teammeeting) {
+    try {
+        helper::get_cm_info_from_teammeeting($teammeeting);
+    } catch (coding_exception $e) {
+        // At this stage, the cm_info does not exist yet, which is probably because we
+        // are calling this from within the add_instance hook. We need to schedule an
+        // adhoc task to take over.
+        $task = new \mod_teammeeting\task\update_calendar_events();
+        $task->set_custom_data(['teammeetingid' => $teammeeting->id]);
+        \core\task\manager::queue_adhoc_task($task);
         return;
     }
-
-    // Retrieve the group IDs.
-    $groupids = [0];
-    $cm = helper::get_cm_info_from_teammeeting($team);
-    if (!empty($team->groupid)) {
-        $groupids = [$team->groupid];
-    } else if ($cm->effectivegroupmode != NOGROUPS) {
-        $groups = groups_get_all_groups($cm->course, 0, $cm->groupingid, 'g.id');
-        $groupids = array_keys($groups);
-    }
-
-    // Create the event in each group.
-    foreach ($groupids as $groupid) {
-        $event = new stdClass;
-        $event->name = $team->name;
-        $event->description = $team->name;
-        $event->courseid = $team->course;
-        $event->groupid = $groupid;
-        $event->userid = 0;
-        $event->modulename = 'teammeeting';
-        $event->instance = $team->id;
-        $event->eventtype = 'open';
-        $event->timestart = $team->opendate;
-        $event->visible = instance_is_visible('teammeeting', $team);
-        $event->timeduration = ($team->closedate - $team->opendate);
-        calendar_event::create($event);
-    }
+    helper::update_teammeeting_calendar_events($teammeeting);
 }
 
 /**

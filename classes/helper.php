@@ -25,12 +25,14 @@
 
 namespace mod_teammeeting;
 
+use calendar_event;
+use coding_exception;
 use context;
 use context_course;
 use DateTimeImmutable;
 use DateTimeZone;
-use JetBrains\PhpStorm\Internal\ReturnTypeContract;
 use local_o365\utils;
+use stdClass;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -154,10 +156,15 @@ class helper {
      *
      * @param object $teammeeting The database record.
      * @return \cm_info The cm_info object.
+     * @throws \coding_exception
      */
     public static function get_cm_info_from_teammeeting($teammeeting) {
         $course = get_fast_modinfo($teammeeting->course);
-        return $course->get_instances_of('teammeeting')[$teammeeting->id];
+        $instances = $course->get_instances_of('teammeeting');
+        if (!array_key_exists($teammeeting->id, $instances)) {
+            throw new coding_exception('Calling get_groupmode_from_teammeeting before instance is created.');
+        }
+        return $instances[$teammeeting->id];
     }
 
     /**
@@ -295,6 +302,57 @@ class helper {
             $meeting->id = $DB->insert_record('teammeeting_meetings', $meeting);
         } else {
             $DB->update_record('teammeeting_meetings', $meeting);
+        }
+    }
+
+    /**
+     * Update the calendar events.
+     *
+     * @param object $teammeeting The database record.
+     */
+    public static function update_teammeeting_calendar_events($teammeeting) {
+        global $DB;
+
+        // Delete all existing events.
+        if ($events = $DB->get_records('event', ['modulename' => 'teammeeting', 'instance' => $teammeeting->id])) {
+            foreach ($events as $event) {
+                $event = calendar_event::load($event);
+                $event->delete();
+            }
+        }
+
+        // We do not create events when we're missing an open or close date.
+        if (!$teammeeting->opendate || !$teammeeting->closedate) {
+            return;
+        }
+
+        // Fetch the cm.
+        $cm = helper::get_cm_info_from_teammeeting($teammeeting);
+
+        // Retrieve the group IDs.
+        $groupids = [0];
+        if (!empty($teammeeting->groupid)) {
+            $groupids = [$teammeeting->groupid];
+        } else if ($cm->effectivegroupmode != NOGROUPS) {
+            $groups = groups_get_all_groups($cm->course, 0, $cm->groupingid, 'g.id');
+            $groupids = array_keys($groups);
+        }
+
+        // Create the event in each group.
+        foreach ($groupids as $groupid) {
+            $event = new stdClass();
+            $event->name = $teammeeting->name;
+            $event->description = $teammeeting->name;
+            $event->courseid = $teammeeting->course;
+            $event->groupid = $groupid;
+            $event->userid = 0;
+            $event->modulename = 'teammeeting';
+            $event->instance = $teammeeting->id;
+            $event->eventtype = 'open';
+            $event->timestart = $teammeeting->opendate;
+            $event->visible = instance_is_visible('teammeeting', $teammeeting);
+            $event->timeduration = ($teammeeting->closedate - $teammeeting->opendate);
+            calendar_event::create($event);
         }
     }
 
