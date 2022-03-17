@@ -102,7 +102,7 @@ class helper {
                 'organizer' => helper::make_meeting_participant_info($o365user, 'presenter'),
                 'attendees' => helper::make_attendee_list($context, $organiserid, $groupid, $groupmode)
             ],
-            'subject' => format_string($teammeeting->name, true, ['context' => $context])
+            'subject' => static::generate_onlinemeeting_name($teammeeting)
         ];
         if (!$teammeeting->reusemeeting) {
             $meetingdata = array_merge($meetingdata, [
@@ -132,6 +132,21 @@ class helper {
         static::save_meeting_record($meeting);
 
         return $meeting;
+    }
+
+    /**
+     * Generate an online meeting instance's name.
+     *
+     * @param object $teammeeting The database record.
+     */
+    public static function generate_onlinemeeting_name($teammeeting) {
+        $context = context_course::instance($teammeeting->course);
+        $subject = format_string($teammeeting->name, true, ['context' => $context]);
+        if (get_config('mod_teammeeting', 'prefixonlinemeetingname')) {
+            $course = get_fast_modinfo($teammeeting->course)->get_course();
+            $subject = '[' . format_string($course->shortname, true, ['context' => $context]) . '] ' . $subject;
+        }
+        return $subject;
     }
 
     /**

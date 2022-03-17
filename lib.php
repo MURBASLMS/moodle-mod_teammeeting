@@ -97,9 +97,8 @@ function teammeeting_add_instance($data, $mform) {
  * @return bool Whether the update was successful.
  */
 function teammeeting_update_instance($data, $mform) {
-    global $DB, $COURSE, $USER;
+    global $DB, $USER;
 
-    $context = context_course::instance($COURSE->id);
     $manager = manager::get_instance();
     $manager->require_is_available();
 
@@ -110,17 +109,25 @@ function teammeeting_update_instance($data, $mform) {
     $data->usermodified = $USER->id;
     $data->timemodified = time();
 
+    // Read current record to check what's changed.
     $team = $DB->get_record('teammeeting', ['id' => $data->instance]);
     $requiresupdate = $team->opendate != $data->opendate || $team->closedate != $data->closedate || $team->name != $data->name;
 
-    if ($requiresupdate) {
+    // Commit the data.
+    $data->id = $data->instance;
+    $DB->update_record('teammeeting', $data);
 
+    // Re-read to get up-to-date values.
+    $team = $DB->get_record('teammeeting', ['id' => $team->id]);
+
+    // Update onlineMeeting if needed.
+    if ($requiresupdate) {
         $api = $manager->get_api();
-        $meetingdata = ['subject' => format_string($data->name, true, ['context' => $context])];
-        if (!$data->reusemeeting) {
+        $meetingdata = ['subject' => helper::generate_onlinemeeting_name($team)];
+        if (!$team->reusemeeting) {
             $meetingdata = array_merge($meetingdata, [
-                'startDateTime' => (new DateTimeImmutable("@{$data->opendate}", new DateTimeZone('UTC')))->format('Y-m-d\TH:i:s\Z'),
-                'endDateTime' => (new DateTimeImmutable("@{$data->closedate}", new DateTimeZone('UTC')))->format('Y-m-d\TH:i:s\Z'),
+                'startDateTime' => (new DateTimeImmutable("@{$team->opendate}", new DateTimeZone('UTC')))->format('Y-m-d\TH:i:s\Z'),
+                'endDateTime' => (new DateTimeImmutable("@{$team->closedate}", new DateTimeZone('UTC')))->format('Y-m-d\TH:i:s\Z'),
             ]);
         }
 
@@ -144,12 +151,8 @@ function teammeeting_update_instance($data, $mform) {
         }
     }
 
-
-    $data->id = $data->instance;
-    $DB->update_record('teammeeting', $data);
-
     // Update the calendar events.
-    teammeeting_set_events($data);
+    teammeeting_set_events($team);
 
     return true;
 }

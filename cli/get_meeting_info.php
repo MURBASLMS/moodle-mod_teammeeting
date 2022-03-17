@@ -103,9 +103,11 @@ foreach ($meetings as $meeting) {
         $result = $api->process_apicall_response($resp, [
             'id' => null,
             'participants' => null,
+            'subject' => null,
         ]);
 
         $attendee = $result['participants']['organizer'];
+        cli_writeln("Name (in onlineMeeting): {$result['subject']}");
         cli_writeln("Organiser (in onlineMeeting): {$attendee['upn']}");
         cli_writeln("Attendees (in onlineMeeting):");
         if (!empty($result['participants']['attendees'])) {
