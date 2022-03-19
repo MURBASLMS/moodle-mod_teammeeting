@@ -36,6 +36,8 @@ use stdClass;
 
 defined('MOODLE_INTERNAL') || die();
 
+require_once($CFG->dirroot . '/calendar/lib.php');
+
 /**
  * Utils.
  *
