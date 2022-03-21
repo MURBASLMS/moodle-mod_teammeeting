@@ -1,6 +1,12 @@
 Changelog
 =========
 
+v1.3.1
+------
+
+- Admin setting to prefix onlineMeeting instances with course shortname
+- Calendar events were not created on create and duplicate when using groups
+
 v1.3.0
 ------
 
