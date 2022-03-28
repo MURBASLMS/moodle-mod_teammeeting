@@ -1,6 +1,11 @@
 Changelog
 =========
 
+v1.3.2
+------
+
+- Group mode always set to "No groups" by default upon instance creation
+
 v1.3.1
 ------
 
