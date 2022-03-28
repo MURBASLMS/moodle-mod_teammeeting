@@ -165,6 +165,13 @@ class mod_teammeeting_mod_form extends moodleform_mod {
      * @param array $defaultvalues
      */
     public function data_preprocessing(&$defaultvalues) {
+        parent::data_postprocessing($defaultvalues);
+
+        // Upon creation of a new instance, if the course does not enforce
+        // the group mode, we default to using "No groups" for simplicity.
+        if (empty($this->current->id) && !$this->get_course()->groupmodeforce) {
+            $defaultvalues['groupmode'] = NOGROUPS;
+        }
     }
 
     /**
