@@ -122,7 +122,10 @@ class mod_teammeeting_mod_form extends moodleform_mod {
         $mform->hideIf('groupingid', 'groupid', 'neq', '');
 
         $this->standard_coursemodule_elements();
-        $this->add_action_buttons();
+
+        // Upon activity creation, we remove "Save and display" to avoid
+        // for someone to nominate themselves right away on accident.
+        $this->add_action_buttons(true, empty($this->current->id) ? false : null);
 
         // That button is adding confusion, and it's not required for us because
         // we emulate its behaviour via our groupid field.
