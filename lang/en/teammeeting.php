@@ -24,6 +24,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+$string['active'] = 'Active';
 $string['alreadyorganiserofothersession'] = 'Already the organiser of another session.';
 $string['apinotconfigured'] = 'The Microsoft API needs to be configured and enabled in the plugin local_o365. Note that this is incomptaible with the legacy API.';
 $string['back'] = 'Return to course';
@@ -35,14 +36,17 @@ $string['copylink'] = 'Copy the meeting link to the clipboard';
 $string['errordates'] = 'The closing date must come after the start date.';
 $string['errordatespast'] = 'The closing date cannot be set in the past.';
 $string['gotoresource'] = 'Go to the meeting';
+$string['link'] = 'Link';
 $string['lobbywaitmessage'] = 'The session will start soon, you will automatically be redirected when it is ready.';
 $string['meetingdefaultduration_help'] = 'The default duration to set for the meeting when a close date is not specified.';
 $string['meetingdefaultduration'] = 'Default duration for the meetings';
 $string['meetingavailablebetween'] = 'The online meeting is available between {$a->from} and {$a->to}.';
 $string['meetingnotavailable'] = 'Access to this meeting is not available. {$a} In case of difficulties please contact your course manager(s).';
+$string['meetingurl'] = 'Meeting URL';
 $string['modulename_help'] = 'This module creates online meetings with Microsoft Teams.';
 $string['modulename'] = 'Team meeting';
 $string['modulenameplural'] = 'Team meetings';
+$string['noinstancesofplugin'] = 'There are no instances of Team meeting.';
 $string['nominatemyself'] = 'Nominate myself';
 $string['noneselected'] = 'None selected';
 $string['noto365user'] = 'Not an O365 user. Has the user linked, or logged in with, their Microsoft 365 account?';

@@ -22,6 +22,8 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use mod_teammeeting\helper;
+
 require_once(__DIR__ . '/../../config.php');
 require_once($CFG->dirroot . '/mod/teammeeting/lib.php');
 
@@ -50,29 +52,87 @@ echo $OUTPUT->header();
 echo $OUTPUT->heading(format_string($strplural));
 
 require_capability('mod/teammeeting:view', $context);
+$canmanage = has_capability('mod/teammeeting:addinstance', $context);
 
-$teams = get_all_instances_in_course('teammeeting', $course);
+$allteams = get_all_instances_in_course('teammeeting', $course);
+$teams = array_filter($allteams, function($team) use ($USER) {
+    if (!has_capability('mod/teammeeting:view', context_module::instance($team->coursemodule))) {
+        return false;
+    } else if ($team->groupid && !helper::can_access_group($team, $USER->id, $team->groupid)) {
+        return false;
+    }
+    return true;
+});
+
 if (!$teams) {
-    notice('There are no instances of teams resources', "../../course/view.php?id=$course->id");
+    notice(get_string('noinstancesofplugin', 'mod_teammeeting'), new moodle_url('/course/view.php', ['id' => $course->id]));
     die;
 }
 
 // Print the table.
 $table = new html_table();
-$table->head = array(get_string('sectionname', 'format_' . $course->format), get_string('name'));
-$table->align = array('left', 'left');
+$table->head = [
+    get_string('sectionname', 'format_' . $course->format),
+    get_string('name', 'core'),
+];
+if ($canmanage) {
+    $table->head[] = get_string('group', 'core');
+    $table->head[] = get_string('active', 'mod_teammeeting');
+    $table->head[] = get_string('meetingurl', 'mod_teammeeting');
+};
+$table->align = array_fill(0, count($table->head), 'left');
 
 foreach ($teams as $team) {
-    if (has_capability('mod/teammeeting:view', context_module::instance($team->coursemodule))) {
-        if (!$team->visible) {
-            // Show dimmed if the mod is hidden.
-            $link = '<a class="dimmed" href="view.php?id=' . $team->coursemodule . '">' . format_string($team->name) . '</a>';
-        } else {
-            // Show normal if the mod is visible.
-            $link = '<a href="view.php?id=' . $team->coursemodule . '">' . format_string($team->name) . '</a>';
-        }
-        $table->data[] = array(get_section_name($course, $team->section), $link);
+    $link = html_writer::link(new moodle_url('/mod/teammeeting/view.php', ['id' => $team->coursemodule]),
+            format_string($team->name), ['class' => !$team->visible ? 'dimmed' : '']);
+
+    $groupid = $team->groupid;
+    $group = '-';
+    if (!empty($groupid)) {
+        $group = groups_get_group_name($groupid);
+    } else if ($team->groupmode == VISIBLEGROUPS) {
+        $group = $OUTPUT->render(new pix_icon('i/groupv', get_string('groupsvisible', 'core'), 'core'));
+    } else if ($team->groupmode == SEPARATEGROUPS) {
+        $group = $OUTPUT->render(new pix_icon('i/groups', get_string('groupsseparate', 'core'), 'core'));
     }
+
+    // Attempt to find the one meeting instance.
+    $meeting = null;
+    $meetingurl = null;
+    if ($groupid || $team->groupmode == NOGROUPS) {
+        $meeting = helper::get_meeting_record($team, $groupid);
+        $meetingurl = $meeting->meetingurl;
+    }
+
+    // Determining whether the activity is "active", we do not know if we do no have a meeting.
+    $isactive = null;
+    if ($meeting !== null) {
+        $isactive = !empty($meetingurl);
+    }
+
+    $activehtml = '-';
+    if ($isactive === true) {
+        $activehtml = html_writer::tag('span', get_string('yes', 'core'), ['class' => 'badge badge-success']);
+    } else if ($isactive === false) {
+        $activehtml = html_writer::tag('span', get_string('no', 'core'), ['class' => 'badge badge-warning']);
+    }
+
+    $meetingurlhtml = '-';
+    if (!empty($meetingurl)) {
+        $meetingurlhtml = html_writer::link(new moodle_url($meetingurl), get_string('link', 'mod_teammeeting'),
+            ['target' => '_blank']);
+    }
+
+    $data = [
+        get_section_name($course, $team->section),
+        $link,
+    ];
+    if ($canmanage) {
+        $data[] = $group;
+        $data[] = $activehtml;
+        $data[] = $meetingurlhtml;
+    }
+    $table->data[] = $data;
 }
 
 echo html_writer::table($table);
