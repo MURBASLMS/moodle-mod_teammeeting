@@ -78,6 +78,7 @@ $table->head = [
 if ($canmanage) {
     $table->head[] = get_string('group', 'core');
     $table->head[] = get_string('active', 'mod_teammeeting');
+    $table->head[] = get_string('organiser', 'mod_teammeeting');
     $table->head[] = get_string('meetingurl', 'mod_teammeeting');
 };
 $table->align = array_fill(0, count($table->head), 'left');
@@ -123,6 +124,18 @@ foreach ($teams as $team) {
             ['target' => '_blank']);
     }
 
+    // Looking up the organiser.
+    $organiserhtml = '-';
+    if ($meeting && !empty($meeting->organiserid)) {
+        $organiseruser = core_user::get_user($meeting->organiserid, '*', IGNORE_MISSING);
+        if (!$organiseruser) {
+            $organiserhtml = '?';
+        } else {
+            $organiserhtml = html_writer::link(new moodle_url('/user/view.php', ['id' => $organiseruser->id,
+                'course' => $course->id]), fullname($organiseruser));
+        }
+    }
+
     $data = [
         get_section_name($course, $team->section),
         $link,
@@ -130,6 +143,7 @@ foreach ($teams as $team) {
     if ($canmanage) {
         $data[] = $group;
         $data[] = $activehtml;
+        $data[] = $organiserhtml;
         $data[] = $meetingurlhtml;
     }
     $table->data[] = $data;
