@@ -161,19 +161,33 @@ function teammeeting_update_instance($data, $mform) {
 function teammeeting_delete_instance($id) {
     global $DB;
 
-    if (!$team = $DB->get_record('teammeeting', array('id' => $id))) {
+    if (!$teammeeting = $DB->get_record('teammeeting', ['id' => $id])) {
         return false;
     }
 
+    $manager = manager::get_instance();
     $cm = get_coursemodule_from_instance('teammeeting', $id);
     \core_completion\api::update_completion_date_event($cm->id, 'teammeeting', $id, null);
 
-    // All context, files, calendar events, etc... are deleted automatically.
-    $DB->delete_records('teammeeting', array('id' => $team->id));
-    $DB->delete_records('teammeeting_meetings', ['teammeetingid' => $team->id]);
+    // Delete remote meeting instances.
+    $meetings = $DB->get_records('teammeeting_meetings', ['teammeetingid' => $teammeeting->id]);
+    foreach ($meetings as $meeting) {
+        if (empty($meeting->organiserid) || empty($meeting->onlinemeetingid)) {
+            continue;
+        } else if (!$manager->is_o365_user($meeting->organiserid)) {
+            continue;
+        }
+        try {
+            helper::delete_meeting_instance($teammeeting, $meeting);
+        } catch (\moodle_exception $e) {
+            debugging('Exception caught: ' . $e->getMessage(), DEBUG_DEVELOPER);
+        }
+    }
 
-    // Should we delete the onlineMeeting instances at Microsoft? There are concerns
-    // as deleting an instance in Moodle could lead to unexpected data loss in Teams.
+    // Delete the team meeting instance and related meetings.
+    // All context, files, calendar events, etc... are deleted automatically.
+    $DB->delete_records('teammeeting_meetings', ['teammeetingid' => $teammeeting->id]);
+    $DB->delete_records('teammeeting', ['id' => $teammeeting->id]);
 
     return true;
 }

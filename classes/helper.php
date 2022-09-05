@@ -139,6 +139,30 @@ class helper {
     }
 
     /**
+     * Delete a meeting instance.
+     *
+     * @param object $teammeeting The team meeting database record.
+     * @param object $meeting The meeting record.
+     * @return bool
+     */
+    public static function delete_meeting_instance($teammeeting, $meeting) {
+        if (empty($meeting->onlinemeetingid)) {
+            throw new \coding_exception('The meeting instance has already been created.');
+        } else if (empty($meeting->organiserid)) {
+            throw new \coding_exception('The organiser ID is not specified.');
+        }
+
+        $organiserid = $meeting->organiserid;
+        $manager = manager::get_instance();
+        $manager->require_is_o365_user($organiserid);
+
+        $o365user = $manager->get_o365_user($organiserid);
+        $api = $manager->get_api();
+
+        $api->apicall('DELETE', '/users/' . $o365user->objectid . '/onlineMeetings/' . $meeting->onlinemeetingid);
+    }
+
+    /**
      * Generate an online meeting instance's name.
      *
      * @param object $teammeeting The database record.
