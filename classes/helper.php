@@ -159,7 +159,18 @@ class helper {
         $o365user = $manager->get_o365_user($organiserid);
         $api = $manager->get_api();
 
-        $api->apicall('DELETE', '/users/' . $o365user->objectid . '/onlineMeetings/' . $meeting->onlinemeetingid);
+        // We update the onlineMeeting instance to disable the chat, and restrict everyone from bypassing
+        // the lobby. This is done because the chat persists in Teams, and so deleting the onlineMeeting
+        // instance does really do anything because  users can still click the "Join" button which would
+        // revive the meeting, and let them through. It's unclear whether the onlineMeeting instance is
+        // revived with the same settings or not, so it's best not to delete it.
+        $api->apicall('PATCH', '/users/' . $o365user->objectid . '/onlineMeetings/' . $meeting->onlinemeetingid, json_encode([
+            'allowMeetingChat' => 'limited',
+            'lobbyBypassSettings' => [
+                'scope' => 'organizer',
+                'isDialInBypassEnabled' => false
+            ]
+        ]));
     }
 
     /**
