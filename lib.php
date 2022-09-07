@@ -106,7 +106,8 @@ function teammeeting_update_instance($data, $mform) {
 
     // Read current record to check what's changed.
     $team = $DB->get_record('teammeeting', ['id' => $data->instance]);
-    $requiresupdate = $team->opendate != $data->opendate || $team->closedate != $data->closedate || $team->name != $data->name;
+    $requiresupdate = $team->opendate != $data->opendate || $team->closedate != $data->closedate || $team->name != $data->name
+        || $team->allowchat != $data->allowchat;
 
     // Commit the data.
     $data->id = $data->instance;
@@ -118,7 +119,10 @@ function teammeeting_update_instance($data, $mform) {
     // Update onlineMeeting if needed.
     if ($requiresupdate) {
         $api = $manager->get_api();
-        $meetingdata = ['subject' => helper::generate_onlinemeeting_name($team)];
+        $meetingdata = [
+            'allowMeetingChat' => helper::get_allowmeetingchat_value($team),
+            'subject' => helper::generate_onlinemeeting_name($team)
+        ];
         if (!$team->reusemeeting) {
             $meetingdata = array_merge($meetingdata, [
                 'startDateTime' => (new DateTimeImmutable("@{$team->opendate}", new DateTimeZone('UTC')))->format('Y-m-d\TH:i:s\Z'),

@@ -48,6 +48,11 @@ require_once($CFG->dirroot . '/calendar/lib.php');
  */
 class helper {
 
+    /** Chat always enabled. */
+    const CHAT_ENABLED = 1;
+    /** Chat enabled during the meeting only. */
+    const CHAT_DURING_MEETING = 2;
+
     /**
      * Whether the user can access a group.
      *
@@ -97,6 +102,7 @@ class helper {
         $api = $manager->get_api();
         $meetingdata = [
             'allowedPresenters' => 'roleIsPresenter',
+            'allowMeetingChat' => static::get_allowmeetingchat_value($teammeeting),
             'autoAdmittedUsers' => 'everyone',
             'lobbyBypassSettings' => [
                 'scope' => 'everyone',
@@ -186,6 +192,21 @@ class helper {
             $subject = '[' . format_string($course->shortname, true, ['context' => $context]) . '] ' . $subject;
         }
         return $subject;
+    }
+
+    /**
+     * Get the "allowMeetingChat" option value.
+     *
+     * @link https://docs.microsoft.com/en-us/graph/api/resources/onlinemeeting?view=graph-rest-1.0#meetingchatmode-values
+     * @param object $teammeeting The database record.
+     * @return string One of 'meetingChatMode'
+     */
+    public static function get_allowmeetingchat_value($teammeeting) {
+        if ($teammeeting->allowchat == static::CHAT_DURING_MEETING) {
+            return 'limited';
+        }
+        // Defaults to 'enabled' as we do not presently support 'disabled'.
+        return 'enabled';
     }
 
     /**

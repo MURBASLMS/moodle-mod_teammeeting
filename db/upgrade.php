@@ -159,5 +159,20 @@ function xmldb_teammeeting_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2022030400, 'teammeeting');
     }
 
+    if ($oldversion < 2022090700) {
+
+        // Define field allowchat to be added to teammeeting.
+        $table = new xmldb_table('teammeeting');
+        $field = new xmldb_field('allowchat', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1', 'groupid');
+
+        // Conditionally launch add field allowchat.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Teammeeting savepoint reached.
+        upgrade_mod_savepoint(true, 2022090700, 'teammeeting');
+    }
+
     return true;
 }

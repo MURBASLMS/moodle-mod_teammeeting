@@ -25,7 +25,10 @@
 defined('MOODLE_INTERNAL') || die();
 
 $string['active'] = 'Active';
+$string['allowchat'] = 'Meeting chat';
+$string['allowchat_help'] = 'When the chat is set to "Enabled during meeting", students can chat while the meeting is ongoing, but not once it has ended. Set this to "Always enabled" to let students use the chat after the meeting ends.';
 $string['alreadyorganiserofothersession'] = 'Already the organiser of another session.';
+$string['alwaysenabled'] = 'Always enabled';
 $string['apinotconfigured'] = 'The Microsoft API needs to be configured and enabled in the plugin local_o365. Note that this is incomptaible with the legacy API.';
 $string['back'] = 'Return to course';
 $string['cannotaccessgroup'] = 'Cannot access group';
@@ -33,6 +36,7 @@ $string['clicktoopen'] = 'Click {$a} link to open the meeting.';
 $string['closedate_help'] = 'If left blank, the default duration of the meeting will apply.';
 $string['closedate'] = 'Closing date of the meeting';
 $string['copylink'] = 'Copy the meeting link to the clipboard';
+$string['enabledduringmeeting'] = 'Enabled during meeting';
 $string['errordates'] = 'The closing date must come after the start date.';
 $string['errordatespast'] = 'The closing date cannot be set in the past.';
 $string['gotoresource'] = 'Go to the meeting';

@@ -23,6 +23,7 @@
  */
 
 use core\output\notification;
+use mod_teammeeting\helper;
 use mod_teammeeting\manager;
 
 defined('MOODLE_INTERNAL') || die;
@@ -108,6 +109,13 @@ class mod_teammeeting_mod_form extends moodleform_mod {
 
         $mform->hideIf('opendate', 'reusemeeting', 'eq', 1);
         $mform->hideIf('closedate', 'reusemeeting', 'eq', 1);
+
+        // Chat settings.
+        $mform->addElement('select', 'allowchat', get_string('allowchat', 'mod_teammeeting'), [
+            helper::CHAT_DURING_MEETING => get_string('enabledduringmeeting', 'mod_teammeeting'),
+            helper::CHAT_ENABLED => get_string('alwaysenabled', 'mod_teammeeting')
+        ]);
+        $mform->addHelpButton('allowchat', 'allowchat', 'mod_teammeeting');
 
         // Group restriction.
         $groups = ['' => get_string('noneselected', 'mod_teammeeting')] + array_map(function($group) {

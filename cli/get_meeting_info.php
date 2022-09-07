@@ -107,9 +107,13 @@ foreach ($meetings as $meeting) {
         ]);
 
         $attendee = $result['participants']['organizer'];
-        cli_writeln("Name (in onlineMeeting): {$result['subject']}");
-        cli_writeln("Organiser (in onlineMeeting): {$attendee['upn']}");
-        cli_writeln("Attendees (in onlineMeeting):");
+        cli_writeln('');
+        cli_writeln('[Remote information (in onlineMeeting)]');
+        cli_writeln("Name: {$result['subject']}");
+        cli_writeln("Chat ID: {$result['chatInfo']['threadId']}");
+        cli_writeln("Option allowMeetingChat: {$result['allowMeetingChat']}");
+        cli_writeln("Organiser: {$attendee['upn']}");
+        cli_writeln("Attendees:");
         if (!empty($result['participants']['attendees'])) {
             foreach ($result['participants']['attendees'] as $attendee) {
                 cli_writeln(" - [{$attendee['role']}] {$attendee['upn']}");

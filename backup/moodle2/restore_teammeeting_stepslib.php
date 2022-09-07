@@ -23,6 +23,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use mod_teammeeting\helper;
+
 defined('MOODLE_INTERNAL') || die();
 
 /**
@@ -58,6 +60,7 @@ class restore_teammeeting_activity_structure_step extends restore_activity_struc
         $data = (object) $data;
         $oldid = $data->id;
         $data->course = $this->get_courseid();
+        $data->allowchat = isset($data->allowchat) ? $data->allowchat : helper::CHAT_ENABLED;
         $data->groupid = !empty($data->groupid) ? $this->get_mappingid('group', $data->groupid, 0) : 0;
         $data->usermodified = $this->get_mappingid('user', $data->usermodified, $USER->id);
 
