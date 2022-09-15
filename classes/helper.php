@@ -48,6 +48,11 @@ require_once($CFG->dirroot . '/calendar/lib.php');
  */
 class helper {
 
+    /** Do not set any attendees. */
+    const ATTENDEES_NONE = 0;
+    /** Forces students with access to be attendees of the meeting. */
+    const ATTENDEES_FORCED = 1;
+
     /** Chat always enabled. */
     const CHAT_ENABLED = 1;
     /** Chat enabled during the meeting only. */
@@ -93,6 +98,8 @@ class helper {
         $organiserid = $meeting->organiserid;
         $context = context_course::instance($teammeeting->course);
         $groupmode = static::get_groupmode_from_teammeeting($teammeeting);
+        $attendeesmode = $teammeeting->attendeesmode;
+
         $manager = manager::get_instance();
         $manager->require_is_available();
         $manager->require_is_o365_user($organiserid);
@@ -110,7 +117,7 @@ class helper {
             ],
             'participants' => [
                 'organizer' => helper::make_meeting_participant_info($o365user, 'presenter'),
-                'attendees' => helper::make_attendee_list($context, $organiserid, $groupid, $groupmode)
+                'attendees' => helper::make_attendee_list($context, $organiserid, $groupid, $groupmode, $attendeesmode)
             ],
             'subject' => static::generate_onlinemeeting_name($teammeeting)
         ];
@@ -281,8 +288,11 @@ class helper {
      * @param int|string $organiserid The Moodle user ID of the organiser.
      * @param int $groupid The group ID, or 0.
      * @param int $groupmode The group mode constant.
+     * @param int @attendeesmode The ATTENDEES_* constant.
      */
-    public static function make_attendee_list(context $context, $organiserid, $groupid = 0, $groupmode = NOGROUPS) {
+    public static function make_attendee_list(context $context, $organiserid, $groupid = 0, $groupmode = NOGROUPS,
+            $attendeesmode = self::ATTENDEES_NONE) {
+
         $manager = manager::get_instance();
         $skipusers = array_flip([$organiserid]);
 
@@ -315,8 +325,11 @@ class helper {
         $skipusers += array_flip($presenterids);
 
         // Construct the list of regular attendees. When groups are used, students are only added as
-        // attendess to their own groups, even when the visible groups mode is enabled.
-        $attendeeids = utils::limit_to_o365_users(static::get_student_ids($context, $groupid));
+        // attendess to their own groups, even when the visible groups mode is enabled. This only applies
+        $attendeeids = [];
+        if ($attendeesmode == static::ATTENDEES_FORCED) {
+            $attendeeids = utils::limit_to_o365_users(static::get_student_ids($context, $groupid));
+        }
         $attendees = array_filter(array_map(function($userid) use ($manager, $skipusers) {
             if (array_key_exists($userid, $skipusers)) {
                 return null; // The user is already an attendee.
@@ -430,12 +443,15 @@ class helper {
         $courseid = $teammeeting->course;
         $context = context_course::instance($courseid);
         $groupmode = static::get_groupmode_from_teammeeting($teammeeting);
+        $attendeesmode = $teammeeting->attendeesmode;
+
         $manager = manager::get_instance();
         $manager->require_is_available();
 
         $meetingdata = [
             'participants' => [
-                'attendees' => helper::make_attendee_list($context, $meeting->organiserid, $meeting->groupid, $groupmode)
+                'attendees' => helper::make_attendee_list($context, $meeting->organiserid, $meeting->groupid,
+                    $groupmode, $attendeesmode)
             ]
         ];
 

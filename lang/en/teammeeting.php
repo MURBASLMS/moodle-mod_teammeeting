@@ -30,6 +30,18 @@ $string['allowchat_help'] = 'When the chat is set to "Enabled during meeting", s
 $string['alreadyorganiserofothersession'] = 'Already the organiser of another session.';
 $string['alwaysenabled'] = 'Always enabled';
 $string['apinotconfigured'] = 'The Microsoft API needs to be configured and enabled in the plugin local_o365. Note that this is incomptaible with the legacy API.';
+$string['attendeesmode'] = 'Membership';
+$string['attendeesmode_help'] = 'By default the Teams meeting and associated group chat student membership attendees are not set, so only students who actually click the url and join a session will become members of the meeting and group chat.
+
+Force/Set membership for a meeting if you want:
+
+- all students in the course or students in a specific group to get notified of a session starting.
+- all students in the course or students in a specific group to be able to see and join the group chat without necessarily joining a particular session.
+
+Setting membership by a specific group also acts as a shortcut to set "Group mode" and "Restrict access", which will be set automatically. It is recommended to leave these settings in the way they are set, but note that you should manually check the values of "Group mode" and "Restrict access" when reverting this setting to "None selected".
+';
+$string['attendeesmodenonedefault'] = 'Upon joining (default)';
+$string['attendeesmodeforced'] = 'Forced';
 $string['back'] = 'Return to course';
 $string['cannotaccessgroup'] = 'Cannot access group';
 $string['clicktoopen'] = 'Click {$a} link to open the meeting.';

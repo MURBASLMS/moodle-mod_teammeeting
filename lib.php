@@ -97,6 +97,9 @@ function teammeeting_update_instance($data, $mform) {
     $manager = manager::get_instance();
     $manager->require_is_available();
 
+    $context = context_course::instance($data->course);
+    $groupmode = $data->groupmode;
+
     $data->name = $data->name;
     $data->intro = $data->intro;
     $data->introformat = $data->introformat;
@@ -106,8 +109,9 @@ function teammeeting_update_instance($data, $mform) {
 
     // Read current record to check what's changed.
     $team = $DB->get_record('teammeeting', ['id' => $data->instance]);
+    $attendeesmodehaschanged = $team->attendeesmode != $data->attendeesmode;
     $requiresupdate = $team->opendate != $data->opendate || $team->closedate != $data->closedate || $team->name != $data->name
-        || $team->allowchat != $data->allowchat;
+        || $team->allowchat != $data->allowchat || $attendeesmodehaschanged;
 
     // Commit the data.
     $data->id = $data->instance;
@@ -119,12 +123,12 @@ function teammeeting_update_instance($data, $mform) {
     // Update onlineMeeting if needed.
     if ($requiresupdate) {
         $api = $manager->get_api();
-        $meetingdata = [
+        $shareddata = [
             'allowMeetingChat' => helper::get_allowmeetingchat_value($team),
             'subject' => helper::generate_onlinemeeting_name($team)
         ];
         if (!$team->reusemeeting) {
-            $meetingdata = array_merge($meetingdata, [
+            $shareddata = array_merge($shareddata, [
                 'startDateTime' => (new DateTimeImmutable("@{$team->opendate}", new DateTimeZone('UTC')))->format('Y-m-d\TH:i:s\Z'),
                 'endDateTime' => (new DateTimeImmutable("@{$team->closedate}", new DateTimeZone('UTC')))->format('Y-m-d\TH:i:s\Z'),
             ]);
@@ -137,8 +141,17 @@ function teammeeting_update_instance($data, $mform) {
         // Updating the meetings at Microsoft.
         foreach ($meetings as $meeting) {
             $o365user = $manager->get_o365_user($meeting->organiserid);
+            $meetingdata = $shareddata;
 
-            // Note that attendees (presenters) do not need updating, they are periodically updated when the meeting page is viewed.
+            // The list of participants only need to be updated when we changed the attendeesmode. It is
+            // otherwise periodically updated when the meeting page is viewed.
+            if ($attendeesmodehaschanged) {
+                $meetingdata['participants'] = [
+                    'attendees' => helper::make_attendee_list($context, $meeting->organiserid, $meeting->groupid,
+                        $groupmode, $data->attendeesmode)
+                ];
+            }
+
             $meetingid = $meeting->onlinemeetingid;
             $resp = $api->apicall('PATCH', "/users/{$o365user->objectid}/onlineMeetings/{$meetingid}", json_encode($meetingdata));
             $api->process_apicall_response($resp, [

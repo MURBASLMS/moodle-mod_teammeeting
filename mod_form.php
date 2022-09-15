@@ -110,6 +110,13 @@ class mod_teammeeting_mod_form extends moodleform_mod {
         $mform->hideIf('opendate', 'reusemeeting', 'eq', 1);
         $mform->hideIf('closedate', 'reusemeeting', 'eq', 1);
 
+        // Membership.
+        $mform->addElement('select', 'attendeesmode', get_string('attendeesmode', 'mod_teammeeting'), [
+            helper::ATTENDEES_NONE => get_string('attendeesmodenonedefault', 'mod_teammeeting'),
+            helper::ATTENDEES_FORCED => get_string('attendeesmodeforced', 'mod_teammeeting')
+        ]);
+        $mform->addHelpButton('attendeesmode', 'attendeesmode', 'mod_teammeeting');
+
         // Chat settings.
         $mform->addElement('select', 'allowchat', get_string('allowchat', 'mod_teammeeting'), [
             helper::CHAT_DURING_MEETING => get_string('enabledduringmeeting', 'mod_teammeeting'),
