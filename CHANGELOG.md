@@ -1,6 +1,24 @@
 Changelog
 =========
 
+v1.4.0
+------
+
+- Setting to set whether the list of attendees is set against a meeting
+- Setting to set whether the chat is open after meeting ends
+- Disable chat and lobby bypass when deleting the activity
+
+v1.3.4
+------
+
+- Module index page includes information about activity setup and meeting link
+- Disable 'Save and display' when creating a new instance
+
+v1.3.3
+------
+
+- Declare the module as an activity instead of a resource
+
 v1.3.2
 ------
 
