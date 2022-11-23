@@ -123,7 +123,6 @@ class mod_teammeeting_mod_form extends moodleform_mod {
             helper::ROLE_PRESENTER => get_string('attendeesrolepresenter', 'mod_teammeeting')
         ]);
         $mform->addHelpButton('attendeesrole', 'attendeesrole', 'mod_teammeeting');
-        $mform->disabledIf('attendeesrole', 'attendeesmode', 'eq', helper::ATTENDEES_NONE);
 
         // Chat settings.
         $mform->addElement('select', 'allowchat', get_string('allowchat', 'mod_teammeeting'), [

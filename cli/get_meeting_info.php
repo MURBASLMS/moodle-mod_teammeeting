@@ -111,6 +111,7 @@ foreach ($meetings as $meeting) {
         cli_writeln('[Remote information (in onlineMeeting)]');
         cli_writeln("Name: {$result['subject']}");
         cli_writeln("Chat ID: {$result['chatInfo']['threadId']}");
+        cli_writeln("Option allowedPresenters: {$result['allowedPresenters']}");
         cli_writeln("Option allowMeetingChat: {$result['allowMeetingChat']}");
         cli_writeln("Organiser: {$attendee['upn']}");
         cli_writeln("Attendees:");

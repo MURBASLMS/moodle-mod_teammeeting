@@ -110,8 +110,9 @@ function teammeeting_update_instance($data, $mform) {
     // Read current record to check what's changed.
     $team = $DB->get_record('teammeeting', ['id' => $data->instance]);
     $attendeesmodehaschanged = $team->attendeesmode != $data->attendeesmode;
+    $attendeesrolehaschanged = $team->attendeesrole != $data->attendeesrole;
     $requiresupdate = $team->opendate != $data->opendate || $team->closedate != $data->closedate || $team->name != $data->name
-        || $team->allowchat != $data->allowchat || $attendeesmodehaschanged;
+        || $team->allowchat != $data->allowchat || $attendeesmodehaschanged || $attendeesrolehaschanged;
 
     // Commit the data.
     $data->id = $data->instance;
@@ -124,6 +125,7 @@ function teammeeting_update_instance($data, $mform) {
     if ($requiresupdate) {
         $api = $manager->get_api();
         $shareddata = [
+            'allowedPresenters' => helper::get_allowedpresenters_value($team),
             'allowMeetingChat' => helper::get_allowmeetingchat_value($team),
             'subject' => helper::generate_onlinemeeting_name($team)
         ];
@@ -143,8 +145,8 @@ function teammeeting_update_instance($data, $mform) {
             $o365user = $manager->get_o365_user($meeting->organiserid);
             $meetingdata = $shareddata;
 
-            // The list of participants only need to be updated when we changed the attendeesmode. It is
-            // otherwise periodically updated when the meeting page is viewed.
+            // The list of participants only need to be updated when we changed the attendeesmode.
+            // It is otherwise periodically updated when the meeting page is viewed.
             if ($attendeesmodehaschanged) {
                 $meetingdata['participants'] = [
                     'attendees' => helper::make_attendee_list($context, $meeting->organiserid, $meeting->groupid,

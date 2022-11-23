@@ -113,7 +113,7 @@ class helper {
         $o365user = $manager->get_o365_user($organiserid);
         $api = $manager->get_api();
         $meetingdata = [
-            'allowedPresenters' => 'roleIsPresenter',
+            'allowedPresenters' => static::get_allowedpresenters_value($teammeeting),
             'allowMeetingChat' => static::get_allowmeetingchat_value($teammeeting),
             'autoAdmittedUsers' => 'everyone',
             'lobbyBypassSettings' => [
@@ -207,6 +207,25 @@ class helper {
     }
 
     /**
+     * Get the "allowedPresenters" option value.
+     *
+     * @link https://learn.microsoft.com/en-us/graph/api/resources/onlinemeeting?view=graph-rest-1.0#onlinemeetingpresenters-values
+     * @param object $teammeeting The database record.
+     * @return string One of 'onlineMeetingPresenters'
+     */
+    public static function get_allowedpresenters_value($teammeeting) {
+        // When the attendees should be presenters, we set everyone as presenter. We may change this in
+        // the future as per feedback, but for now this works because there are cases where we do not
+        // force the list of attendees but may still want people joining to be presenters by default.
+        // Note that when everyone is a presenter, the individual role of each attendee can be still
+        // set as attendee.
+        if ($teammeeting->attendeesrole == static::ROLE_PRESENTER) {
+            return 'everyone';
+        }
+        return 'roleIsPresenter';
+    }
+
+    /**
      * Get the "allowMeetingChat" option value.
      *
      * @link https://docs.microsoft.com/en-us/graph/api/resources/onlinemeeting?view=graph-rest-1.0#meetingchatmode-values
@@ -296,7 +315,7 @@ class helper {
      * @param int @attendeesmode The ATTENDEES_* constant.
      */
     public static function make_attendee_list(context $context, $organiserid, $groupid = 0, $groupmode = NOGROUPS,
-            $attendeesmode = self::ATTENDEES_NONE, $attendeesrole = self::ROLE_ATTENDEE) {
+            $attendeesmode = self::ATTENDEES_NONE) {
 
         $manager = manager::get_instance();
         $skipusers = array_flip([$organiserid]);
@@ -335,12 +354,11 @@ class helper {
         if ($attendeesmode == static::ATTENDEES_FORCED) {
             $attendeeids = utils::limit_to_o365_users(static::get_student_ids($context, $groupid));
         }
-        $role = $attendeesrole == static::ROLE_PRESENTER ? 'presenter' : 'attendee';
-        $attendees = array_filter(array_map(function($userid) use ($manager, $skipusers, $role) {
+        $attendees = array_filter(array_map(function($userid) use ($manager, $skipusers) {
             if (array_key_exists($userid, $skipusers)) {
                 return null; // The user is already an attendee.
             }
-            return helper::make_meeting_participant_info($manager->get_o365_user($userid), $role);
+            return helper::make_meeting_participant_info($manager->get_o365_user($userid), 'attendee');
         }, $attendeeids));
 
         // Mandatory use of array_values to drop the keys.
