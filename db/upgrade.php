@@ -189,5 +189,20 @@ function xmldb_teammeeting_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2022091500, 'teammeeting');
     }
 
+    if ($oldversion < 2022112300) {
+
+        // Define field attendeesrole to be added to teammeeting.
+        $table = new xmldb_table('teammeeting');
+        $field = new xmldb_field('attendeesrole', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'attendeesmode');
+
+        // Conditionally launch add field attendeesrole.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Teammeeting savepoint reached.
+        upgrade_mod_savepoint(true, 2022112300, 'teammeeting');
+    }
+
     return true;
 }

@@ -42,6 +42,10 @@ Setting membership by a specific group also acts as a shortcut to set "Group mod
 ';
 $string['attendeesmodenonedefault'] = 'Upon joining (default)';
 $string['attendeesmodeforced'] = 'Forced';
+$string['attendeesrole'] = 'Membership role';
+$string['attendeesrole_help'] = 'You may use this setting to assign the presenter role to all regular attendees. Note that presenters are given almost the same permissions as the meeting organiser. This should only be used with a trusted attendees.';
+$string['attendeesroleattendee'] = 'Attendee (default)';
+$string['attendeesrolepresenter'] = 'Presenter';
 $string['back'] = 'Return to course';
 $string['cannotaccessgroup'] = 'Cannot access group';
 $string['clicktoopen'] = 'Click {$a} link to open the meeting.';

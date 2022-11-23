@@ -117,6 +117,14 @@ class mod_teammeeting_mod_form extends moodleform_mod {
         ]);
         $mform->addHelpButton('attendeesmode', 'attendeesmode', 'mod_teammeeting');
 
+        // Membership role.
+        $mform->addElement('select', 'attendeesrole', get_string('attendeesrole', 'mod_teammeeting'), [
+            helper::ROLE_ATTENDEE => get_string('attendeesroleattendee', 'mod_teammeeting'),
+            helper::ROLE_PRESENTER => get_string('attendeesrolepresenter', 'mod_teammeeting')
+        ]);
+        $mform->addHelpButton('attendeesrole', 'attendeesrole', 'mod_teammeeting');
+        $mform->disabledIf('attendeesrole', 'attendeesmode', 'eq', helper::ATTENDEES_NONE);
+
         // Chat settings.
         $mform->addElement('select', 'allowchat', get_string('allowchat', 'mod_teammeeting'), [
             helper::CHAT_DURING_MEETING => get_string('enabledduringmeeting', 'mod_teammeeting'),

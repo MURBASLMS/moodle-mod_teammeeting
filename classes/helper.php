@@ -53,6 +53,11 @@ class helper {
     /** Forces students with access to be attendees of the meeting. */
     const ATTENDEES_FORCED = 1;
 
+    /** Attendees will have the role of an attendee. */
+    const ROLE_ATTENDEE = 0;
+    /** Attendees will have the role of a presenter. */
+    const ROLE_PRESENTER = 1;
+
     /** Chat always enabled. */
     const CHAT_ENABLED = 1;
     /** Chat enabled during the meeting only. */
@@ -291,7 +296,7 @@ class helper {
      * @param int @attendeesmode The ATTENDEES_* constant.
      */
     public static function make_attendee_list(context $context, $organiserid, $groupid = 0, $groupmode = NOGROUPS,
-            $attendeesmode = self::ATTENDEES_NONE) {
+            $attendeesmode = self::ATTENDEES_NONE, $attendeesrole = self::ROLE_ATTENDEE) {
 
         $manager = manager::get_instance();
         $skipusers = array_flip([$organiserid]);
@@ -330,11 +335,12 @@ class helper {
         if ($attendeesmode == static::ATTENDEES_FORCED) {
             $attendeeids = utils::limit_to_o365_users(static::get_student_ids($context, $groupid));
         }
-        $attendees = array_filter(array_map(function($userid) use ($manager, $skipusers) {
+        $role = $attendeesrole == static::ROLE_PRESENTER ? 'presenter' : 'attendee';
+        $attendees = array_filter(array_map(function($userid) use ($manager, $skipusers, $role) {
             if (array_key_exists($userid, $skipusers)) {
                 return null; // The user is already an attendee.
             }
-            return helper::make_meeting_participant_info($manager->get_o365_user($userid), 'attendee');
+            return helper::make_meeting_participant_info($manager->get_o365_user($userid), $role);
         }, $attendeeids));
 
         // Mandatory use of array_values to drop the keys.

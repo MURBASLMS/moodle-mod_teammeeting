@@ -43,7 +43,7 @@ class backup_teammeeting_activity_structure_step extends backup_activity_structu
         // Define each element separated.
         $teammeeting = new backup_nested_element('teammeeting', ['id'], [
             'name', 'intro', 'introformat', 'opendate', 'closedate', 'usermodified',
-            'reusemeeting', 'allowchat', 'attendeesmode', 'groupid', 'timemodified'
+            'reusemeeting', 'allowchat', 'attendeesmode', 'attendeesrole', 'groupid', 'timemodified'
         ]);
         $meeting = new backup_nested_element('meeting', ['id'], ['groupid', 'organiserid', 'onlinemeetingid', 'meetingurl']);
         $teammeeting->add_child($meeting);
