@@ -63,6 +63,8 @@ class restore_teammeeting_activity_structure_step extends restore_activity_struc
         $data->allowchat = isset($data->allowchat) ? $data->allowchat : helper::CHAT_ENABLED;
         $data->attendeesmode = isset($data->attendeesmode) ? $data->attendeesmode : helper::ATTENDEES_FORCED;
         $data->attendeesrole = isset($data->attendeesrole) ? $data->attendeesrole : helper::ROLE_ATTENDEE;
+        $data->teachersmode = isset($data->teachersmode) ? $data->teachersmode : helper::TEACHERS_ALL;
+        $data->teacherids = isset($data->teacherids) ? $data->teacherids : '';
         $data->groupid = !empty($data->groupid) ? $this->get_mappingid('group', $data->groupid, 0) : 0;
         $data->usermodified = $this->get_mappingid('user', $data->usermodified, $USER->id);
 
