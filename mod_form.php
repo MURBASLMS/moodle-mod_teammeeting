@@ -110,14 +110,31 @@ class mod_teammeeting_mod_form extends moodleform_mod {
         $mform->hideIf('opendate', 'reusemeeting', 'eq', 1);
         $mform->hideIf('closedate', 'reusemeeting', 'eq', 1);
 
-        // Membership.
+        // Teacher membership.
+        $mform->addElement('select', 'teachersmode', get_string('teachersmode', 'mod_teammeeting'), [
+            helper::TEACHERS_ALL => get_string('teachersmodealldefault', 'mod_teammeeting'),
+            helper::TEACHERS_SELECT => get_string('teachersmodeselect', 'mod_teammeeting')
+        ]);
+        $mform->addHelpButton('teachersmode', 'teachersmode', 'mod_teammeeting');
+
+        // Selected teachers.
+        $potentialpresenters = array_map(function($user) {
+            return fullname($user);
+        }, get_enrolled_users($this->context, 'mod/teammeeting:presentmeeting', 0, 'u.*', 'u.lastname ASC'));
+        $mform->addElement('autocomplete', 'teacherids', get_string('selectedteachers', 'mod_teammeeting'), $potentialpresenters, [
+            'multiple' => true,
+            'noselectionstring' => get_string('noneselected', 'mod_teammeeting')
+        ]);
+        $mform->hideIf('teacherids', 'teachersmode', 'eq', helper::TEACHERS_ALL);
+
+        // Student membership.
         $mform->addElement('select', 'attendeesmode', get_string('attendeesmode', 'mod_teammeeting'), [
             helper::ATTENDEES_NONE => get_string('attendeesmodenonedefault', 'mod_teammeeting'),
             helper::ATTENDEES_FORCED => get_string('attendeesmodeforced', 'mod_teammeeting')
         ]);
         $mform->addHelpButton('attendeesmode', 'attendeesmode', 'mod_teammeeting');
 
-        // Membership role.
+        // Student role.
         $mform->addElement('select', 'attendeesrole', get_string('attendeesrole', 'mod_teammeeting'), [
             helper::ROLE_ATTENDEE => get_string('attendeesroleattendee', 'mod_teammeeting'),
             helper::ROLE_PRESENTER => get_string('attendeesrolepresenter', 'mod_teammeeting')
@@ -242,6 +259,10 @@ class mod_teammeeting_mod_form extends moodleform_mod {
             $data->availabilityconditionsjson = $this->construct_availability_conditions_json($data);
         }
 
+        // Convert the teacher IDs field to a sequence.
+        $data->teacherids = implode(',', array_map(function($value) {
+            return (int) $value;
+        }, (array) $data->teacherids));
     }
 
     /**

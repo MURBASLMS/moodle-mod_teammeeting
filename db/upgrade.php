@@ -204,5 +204,35 @@ function xmldb_teammeeting_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2022112300, 'teammeeting');
     }
 
+    if ($oldversion < 2023011600) {
+
+        // Define field teachersmode to be added to teammeeting.
+        $table = new xmldb_table('teammeeting');
+        $field = new xmldb_field('teachersmode', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'attendeesrole');
+
+        // Conditionally launch add field teachersmode.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Teammeeting savepoint reached.
+        upgrade_mod_savepoint(true, 2023011600, 'teammeeting');
+    }
+
+    if ($oldversion < 2023011601) {
+
+        // Define field teacherids to be added to teammeeting.
+        $table = new xmldb_table('teammeeting');
+        $field = new xmldb_field('teacherids', XMLDB_TYPE_CHAR, '1024', null, XMLDB_NOTNULL, null, null, 'teachersmode');
+
+        // Conditionally launch add field teacherids.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Teammeeting savepoint reached.
+        upgrade_mod_savepoint(true, 2023011601, 'teammeeting');
+    }
+
     return true;
 }

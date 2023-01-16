@@ -30,7 +30,7 @@ $string['allowchat_help'] = 'When the chat is set to "Enabled during meeting", s
 $string['alreadyorganiserofothersession'] = 'Already the organiser of another session.';
 $string['alwaysenabled'] = 'Always enabled';
 $string['apinotconfigured'] = 'The Microsoft API needs to be configured and enabled in the plugin local_o365. Note that this is incomptaible with the legacy API.';
-$string['attendeesmode'] = 'Membership';
+$string['attendeesmode'] = 'Student membership';
 $string['attendeesmode_help'] = 'By default the Teams meeting and associated group chat student membership attendees are not set, so only students who actually click the url and join a session will become members of the meeting and group chat.
 
 Force/Set membership for a meeting if you want:
@@ -42,7 +42,7 @@ Setting membership by a specific group also acts as a shortcut to set "Group mod
 ';
 $string['attendeesmodenonedefault'] = 'Upon joining (default)';
 $string['attendeesmodeforced'] = 'Forced';
-$string['attendeesrole'] = 'Membership role';
+$string['attendeesrole'] = 'Student role';
 $string['attendeesrole_help'] = 'You may use this setting to assign the presenter role to everyone attending the meeting. Note that presenters are given almost the same permissions as the meeting organiser.';
 $string['attendeesroleattendee'] = 'Attendee (default)';
 $string['attendeesrolepresenter'] = 'Presenter';
@@ -100,8 +100,13 @@ $string['reusemeetingno'] = 'Time slot';
 $string['reusemeetingyes'] = 'Open ended';
 $string['reusemeeting'] = 'Meeting time';
 $string['selectgroupformeeting'] = 'Please select the group to open the meeting for.';
+$string['selectedteachers'] = 'Selected teachers';
 $string['sessionnotready'] = 'Session not ready';
 $string['sessionrequiresorganiserinstructions'] = 'This session requires an organiser to be nominated. You can either nominate yourself as the organiser and start the session, or wait for someone else to do so. Please note that the organiser of a meeting cannot be changed once it has been defined.';
+$string['teachersmode'] = 'Teacher membership';
+$string['teachersmode_help'] = 'Defines which teachers are members of the meeting and group chat.';
+$string['teachersmodealldefault'] = 'All forced (default)';
+$string['teachersmodeselect'] = 'Only selected';
 $string['teammeeting:addinstance'] = 'Add a Team meeting instance';
 $string['teammeeting:presentmeeting'] = 'Whether the user can organise or present online meetings';
 $string['teammeeting:view'] = 'View a Team meeting instance';

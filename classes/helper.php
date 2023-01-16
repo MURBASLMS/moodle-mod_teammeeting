@@ -53,6 +53,11 @@ class helper {
     /** Forces students with access to be attendees of the meeting. */
     const ATTENDEES_FORCED = 1;
 
+    /** All teachers are attendees (presenters). */
+    const TEACHERS_ALL = 0;
+    /** Only some teachers are attendees (presenters). */
+    const TEACHERS_SELECT = 1;
+
     /** Attendees will have the role of an attendee. */
     const ROLE_ATTENDEE = 0;
     /** Attendees will have the role of a presenter. */
