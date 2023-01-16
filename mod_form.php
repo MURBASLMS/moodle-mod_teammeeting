@@ -125,6 +125,7 @@ class mod_teammeeting_mod_form extends moodleform_mod {
             'multiple' => true,
             'noselectionstring' => get_string('noneselected', 'mod_teammeeting')
         ]);
+        $mform->addHelpButton('teacherids', 'selectedteachers', 'mod_teammeeting');
         $mform->hideIf('teacherids', 'teachersmode', 'eq', helper::TEACHERS_ALL);
 
         // Student membership.
@@ -198,6 +199,13 @@ class mod_teammeeting_mod_form extends moodleform_mod {
             }
         }
 
+        $noattendess = $data['attendeesmode'] == helper::ATTENDEES_NONE;
+        $hasteachers = $data['teachersmode'] == helper::TEACHERS_ALL || ($data['teachersmode'] == helper::TEACHERS_SELECT
+            && !empty($data['teacherids']));
+        if ($noattendess && !$hasteachers) {
+            $errors['teacherids'] = get_string('errorteachersrequired', 'mod_teammeeting');
+        }
+
         return $errors;
     }
 
@@ -213,6 +221,11 @@ class mod_teammeeting_mod_form extends moodleform_mod {
         // the group mode, we default to using "No groups" for simplicity.
         if (empty($this->current->id) && !$this->get_course()->groupmodeforce) {
             $defaultvalues['groupmode'] = NOGROUPS;
+        }
+
+        // Reverse the sequence.
+        if (!empty($defaultvalues['teacherids'])) {
+            $defaultvalues['teacherids'] = explode(',', $defaultvalues['teacherids']);
         }
     }
 

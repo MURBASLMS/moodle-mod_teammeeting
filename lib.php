@@ -111,8 +111,11 @@ function teammeeting_update_instance($data, $mform) {
     $team = $DB->get_record('teammeeting', ['id' => $data->instance]);
     $attendeesmodehaschanged = $team->attendeesmode != $data->attendeesmode;
     $attendeesrolehaschanged = $team->attendeesrole != $data->attendeesrole;
+    $teachersmodehaschanged = $team->teachersmode != $data->teachersmode;
+    $teacheridshaschanged = $team->teacherids != $data->teacherids;
     $requiresupdate = $team->opendate != $data->opendate || $team->closedate != $data->closedate || $team->name != $data->name
-        || $team->allowchat != $data->allowchat || $attendeesmodehaschanged || $attendeesrolehaschanged;
+        || $team->allowchat != $data->allowchat || $attendeesmodehaschanged || $attendeesrolehaschanged
+        || $teacheridshaschanged || $teachersmodehaschanged;
 
     // Commit the data.
     $data->id = $data->instance;
@@ -147,10 +150,10 @@ function teammeeting_update_instance($data, $mform) {
 
             // The list of participants only need to be updated when we changed the attendeesmode.
             // It is otherwise periodically updated when the meeting page is viewed.
-            if ($attendeesmodehaschanged) {
+            if ($attendeesmodehaschanged || $teachersmodehaschanged || $teacheridshaschanged) {
                 $meetingdata['participants'] = [
                     'attendees' => helper::make_attendee_list($context, $meeting->organiserid, $meeting->groupid,
-                        $groupmode, $data->attendeesmode)
+                        $groupmode, $data->attendeesmode, $data->teachersmode, helper::get_selected_teacher_ids($team))
                 ];
             }
 

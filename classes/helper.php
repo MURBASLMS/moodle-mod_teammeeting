@@ -109,6 +109,7 @@ class helper {
         $context = context_course::instance($teammeeting->course);
         $groupmode = static::get_groupmode_from_teammeeting($teammeeting);
         $attendeesmode = $teammeeting->attendeesmode;
+        $teachersmode = $teammeeting->teachersmode;
 
         $manager = manager::get_instance();
         $manager->require_is_available();
@@ -127,7 +128,8 @@ class helper {
             ],
             'participants' => [
                 'organizer' => helper::make_meeting_participant_info($o365user, 'presenter'),
-                'attendees' => helper::make_attendee_list($context, $organiserid, $groupid, $groupmode, $attendeesmode)
+                'attendees' => helper::make_attendee_list($context, $organiserid, $groupid, $groupmode, $attendeesmode,
+                    $teachersmode, static::get_selected_teacher_ids($teammeeting))
             ],
             'subject' => static::generate_onlinemeeting_name($teammeeting)
         ];
@@ -298,6 +300,17 @@ class helper {
     }
 
     /**
+     * Get the IDs of selected teachers.
+     *
+     * @return int[] The teacher IDs.
+     */
+    public static function get_selected_teacher_ids($teammeeting) {
+        return array_map(function($userid) {
+            return (int) $userid;
+        }, explode(',', $teammeeting->teacherids));
+    }
+
+    /**
      * Get the list of students in a context.
      *
      * @param context $context The context.
@@ -320,7 +333,7 @@ class helper {
      * @param int @attendeesmode The ATTENDEES_* constant.
      */
     public static function make_attendee_list(context $context, $organiserid, $groupid = 0, $groupmode = NOGROUPS,
-            $attendeesmode = self::ATTENDEES_NONE) {
+            $attendeesmode = self::ATTENDEES_NONE, $teachersmode = self::TEACHERS_ALL, $teacherids = []) {
 
         $manager = manager::get_instance();
         $skipusers = array_flip([$organiserid]);
@@ -343,6 +356,9 @@ class helper {
                 $groupid && $groupmode == SEPARATEGROUPS
             )
         ));
+        if ($teachersmode == static::TEACHERS_SELECT) {
+            $presenterids = array_intersect($presenterids, $teacherids);
+        }
         $presenters = array_filter(array_map(function($userid) use ($manager, $skipusers) {
             if (array_key_exists($userid, $skipusers)) {
                 return null; // The user is already an attendee.
@@ -473,6 +489,7 @@ class helper {
         $context = context_course::instance($courseid);
         $groupmode = static::get_groupmode_from_teammeeting($teammeeting);
         $attendeesmode = $teammeeting->attendeesmode;
+        $teachersmode = $teammeeting->teachersmode;
 
         $manager = manager::get_instance();
         $manager->require_is_available();
@@ -480,7 +497,7 @@ class helper {
         $meetingdata = [
             'participants' => [
                 'attendees' => helper::make_attendee_list($context, $meeting->organiserid, $meeting->groupid,
-                    $groupmode, $attendeesmode)
+                    $groupmode, $attendeesmode, $teachersmode, static::get_selected_teacher_ids($teammeeting))
             ]
         ];
 
