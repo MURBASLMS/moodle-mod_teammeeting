@@ -110,23 +110,30 @@ class mod_teammeeting_mod_form extends moodleform_mod {
         $mform->hideIf('opendate', 'reusemeeting', 'eq', 1);
         $mform->hideIf('closedate', 'reusemeeting', 'eq', 1);
 
-        // Teacher membership.
-        $mform->addElement('select', 'teachersmode', get_string('teachersmode', 'mod_teammeeting'), [
-            helper::TEACHERS_ALL => get_string('teachersmodealldefault', 'mod_teammeeting'),
-            helper::TEACHERS_SELECT => get_string('teachersmodeselect', 'mod_teammeeting')
-        ]);
-        $mform->addHelpButton('teachersmode', 'teachersmode', 'mod_teammeeting');
+        // Teacher membership. Previous meetings were including all presenters in each meeting. This is no
+        // longer desired as presenters should be selected. New instances will use the new value, previous instances
+        // will use all presenters.
+        $mform->addElement('hidden', 'teachersmode');
+        $mform->setType('teachersmode', PARAM_INT);
+        $mform->setConstant('teachersmode', $isedit ? $this->current->teachersmode : helper::TEACHERS_SELECT);
 
-        // Selected teachers.
-        $potentialpresenters = array_map(function($user) {
-            return fullname($user);
-        }, get_enrolled_users($this->context, 'mod/teammeeting:presentmeeting', 0, 'u.*', 'u.lastname ASC'));
-        $mform->addElement('autocomplete', 'teacherids', get_string('selectedteachers', 'mod_teammeeting'), $potentialpresenters, [
-            'multiple' => true,
-            'noselectionstring' => get_string('noneselected', 'mod_teammeeting')
-        ]);
-        $mform->addHelpButton('teacherids', 'selectedteachers', 'mod_teammeeting');
-        $mform->hideIf('teacherids', 'teachersmode', 'eq', helper::TEACHERS_ALL);
+        // Additional teachers.
+        if ($isedit && $this->current->teachersmode == helper::TEACHERS_ALL) {
+            $mform->addElement('static', 'teacheridsstatic', get_string('additionalteachers', 'mod_teammeeting'),
+                get_string('all', 'core'));
+            $mform->addHelpButton('teacheridsstatic', 'additionalteachers', 'mod_teammeeting');
+        } else {
+            $potentialpresenters = array_map(function($user) {
+                return fullname($user);
+            }, get_enrolled_users($this->context, 'mod/teammeeting:presentmeeting', 0, 'u.*', 'u.lastname ASC'));
+            $mform->addElement('autocomplete', 'teacherids', get_string('additionalteachers', 'mod_teammeeting'), $potentialpresenters,
+                [
+                    'multiple' => true,
+                    'noselectionstring' => get_string('noneselected', 'mod_teammeeting')
+                ]
+            );
+            $mform->addHelpButton('teacherids', 'additionalteachers', 'mod_teammeeting');
+        }
 
         // Student membership.
         $mform->addElement('select', 'attendeesmode', get_string('attendeesmode', 'mod_teammeeting'), [
@@ -199,13 +206,6 @@ class mod_teammeeting_mod_form extends moodleform_mod {
             }
         }
 
-        $noattendess = $data['attendeesmode'] == helper::ATTENDEES_NONE;
-        $hasteachers = $data['teachersmode'] == helper::TEACHERS_ALL || ($data['teachersmode'] == helper::TEACHERS_SELECT
-            && !empty($data['teacherids']));
-        if ($noattendess && !$hasteachers) {
-            $errors['teacherids'] = get_string('errorteachersrequired', 'mod_teammeeting');
-        }
-
         return $errors;
     }
 
@@ -275,7 +275,7 @@ class mod_teammeeting_mod_form extends moodleform_mod {
         // Convert the teacher IDs field to a sequence.
         $data->teacherids = implode(',', array_map(function($value) {
             return (int) $value;
-        }, (array) $data->teacherids));
+        }, (array) ($data->teacherids ?? [])));
     }
 
     /**

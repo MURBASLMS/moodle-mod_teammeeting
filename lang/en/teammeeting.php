@@ -25,6 +25,8 @@
 defined('MOODLE_INTERNAL') || die();
 
 $string['active'] = 'Active';
+$string['additionalteachers'] = 'Additional teachers';
+$string['additionalteachers_help'] = 'This field allows you to allocate staff in addition to the meeting organiser. Additional staff will be added to the chat in Teams, regardless of whether they join the meeting. Please note: the meeting organiser will still need to be nominated after the creation of this activity.';
 $string['allowchat'] = 'Meeting chat';
 $string['allowchat_help'] = 'When the chat is set to "Enabled during meeting", students can chat while the meeting is ongoing, but not once it has ended. Set this to "Always enabled" to let students use the chat after the meeting ends.';
 $string['alreadyorganiserofothersession'] = 'Already the organiser of another session.';
@@ -105,10 +107,6 @@ $string['selectedteachers'] = 'Selected teachers';
 $string['selectedteachers_help'] = 'The list of teachers that will become member of the meeting. If the activity is group restricted, selected teachers that do not belong to the group will be excluded. Note that this setting will not take effect while the meeting is ongoing.';
 $string['sessionnotready'] = 'Session not ready';
 $string['sessionrequiresorganiserinstructions'] = 'This session requires an organiser to be nominated. You can either nominate yourself as the organiser and start the session, or wait for someone else to do so. Please note that the organiser of a meeting cannot be changed once it has been defined.';
-$string['teachersmode'] = 'Teacher membership';
-$string['teachersmode_help'] = 'Defines which teachers are members of the meeting and group chat.';
-$string['teachersmodealldefault'] = 'All forced (default)';
-$string['teachersmodeselect'] = 'Only selected';
 $string['teammeeting:addinstance'] = 'Add a Team meeting instance';
 $string['teammeeting:presentmeeting'] = 'Whether the user can organise or present online meetings';
 $string['teammeeting:view'] = 'View a Team meeting instance';
