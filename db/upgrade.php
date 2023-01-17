@@ -249,5 +249,16 @@ function xmldb_teammeeting_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2023011700, 'teammeeting');
     }
 
+    if ($oldversion < 2023011701) {
+
+        // Mark all meetings as needing to be synced. This is to then run a script
+        // that will sync the participants of all meetings. This is meant as a transition
+        // from making all teachers presenters to making presenters configurable.
+        $DB->set_field('teammeeting_meetings', 'lastpresenterssync', 0);
+
+        // Teammeeting savepoint reached.
+        upgrade_mod_savepoint(true, 2023011701, 'teammeeting');
+    }
+
     return true;
 }
