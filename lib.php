@@ -111,11 +111,10 @@ function teammeeting_update_instance($data, $mform) {
     $team = $DB->get_record('teammeeting', ['id' => $data->instance]);
     $attendeesmodehaschanged = $team->attendeesmode != $data->attendeesmode;
     $attendeesrolehaschanged = $team->attendeesrole != $data->attendeesrole;
-    $teachersmodehaschanged = $team->teachersmode != $data->teachersmode;
     $teacheridshaschanged = $team->teacherids != $data->teacherids;
     $requiresupdate = $team->opendate != $data->opendate || $team->closedate != $data->closedate || $team->name != $data->name
         || $team->allowchat != $data->allowchat || $attendeesmodehaschanged || $attendeesrolehaschanged
-        || $teacheridshaschanged || $teachersmodehaschanged;
+        || $teacheridshaschanged;
 
     // Commit the data.
     $data->id = $data->instance;
@@ -152,7 +151,7 @@ function teammeeting_update_instance($data, $mform) {
             // been set. Moreover, we may need to empty the participants list when some other settings changed.
             $meetingdata['participants'] = [
                 'attendees' => helper::make_attendee_list($context, $meeting->organiserid, $meeting->groupid,
-                    $groupmode, $data->attendeesmode, $data->teachersmode, helper::get_selected_teacher_ids($team))
+                    $groupmode, $data->attendeesmode, helper::get_selected_teacher_ids($team))
             ];
 
             $meetingid = $meeting->onlinemeetingid;

@@ -110,30 +110,17 @@ class mod_teammeeting_mod_form extends moodleform_mod {
         $mform->hideIf('opendate', 'reusemeeting', 'eq', 1);
         $mform->hideIf('closedate', 'reusemeeting', 'eq', 1);
 
-        // Teacher membership. Previous meetings were including all presenters in each meeting. This is no
-        // longer desired as presenters should be selected. New instances will use the new value, previous instances
-        // will use all presenters.
-        $mform->addElement('hidden', 'teachersmode');
-        $mform->setType('teachersmode', PARAM_INT);
-        $mform->setConstant('teachersmode', $isedit ? $this->current->teachersmode : helper::TEACHERS_SELECT);
-
         // Additional teachers.
-        if ($isedit && $this->current->teachersmode == helper::TEACHERS_ALL) {
-            $mform->addElement('static', 'teacheridsstatic', get_string('additionalteachers', 'mod_teammeeting'),
-                get_string('all', 'core'));
-            $mform->addHelpButton('teacheridsstatic', 'additionalteachers', 'mod_teammeeting');
-        } else {
-            $potentialpresenters = array_map(function($user) {
-                return fullname($user);
-            }, get_enrolled_users($this->context, 'mod/teammeeting:presentmeeting', 0, 'u.*', 'u.lastname ASC'));
-            $mform->addElement('autocomplete', 'teacherids', get_string('additionalteachers', 'mod_teammeeting'), $potentialpresenters,
-                [
-                    'multiple' => true,
-                    'noselectionstring' => get_string('noneselected', 'mod_teammeeting')
-                ]
-            );
-            $mform->addHelpButton('teacherids', 'additionalteachers', 'mod_teammeeting');
-        }
+        $potentialpresenters = array_map(function($user) {
+            return fullname($user);
+        }, get_enrolled_users($this->context, 'mod/teammeeting:presentmeeting', 0, 'u.*', 'u.lastname ASC'));
+        $mform->addElement('autocomplete', 'teacherids', get_string('additionalteachers', 'mod_teammeeting'), $potentialpresenters,
+            [
+                'multiple' => true,
+                'noselectionstring' => get_string('noneselected', 'mod_teammeeting')
+            ]
+        );
+        $mform->addHelpButton('teacherids', 'additionalteachers', 'mod_teammeeting');
 
         // Student membership.
         $mform->addElement('select', 'attendeesmode', get_string('attendeesmode', 'mod_teammeeting'), [

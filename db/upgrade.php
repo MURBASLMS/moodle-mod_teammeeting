@@ -234,5 +234,20 @@ function xmldb_teammeeting_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2023011601, 'teammeeting');
     }
 
+    if ($oldversion < 2023011700) {
+
+        // Define field teachersmode to be dropped from teammeeting.
+        $table = new xmldb_table('teammeeting');
+        $field = new xmldb_field('teachersmode');
+
+        // Conditionally launch drop field teachersmode.
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->drop_field($table, $field);
+        }
+
+        // Teammeeting savepoint reached.
+        upgrade_mod_savepoint(true, 2023011700, 'teammeeting');
+    }
+
     return true;
 }

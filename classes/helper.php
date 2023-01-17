@@ -53,11 +53,6 @@ class helper {
     /** Forces students with access to be attendees of the meeting. */
     const ATTENDEES_FORCED = 1;
 
-    /** All teachers are attendees (presenters). */
-    const TEACHERS_ALL = 0;
-    /** Only some teachers are attendees (presenters). */
-    const TEACHERS_SELECT = 1;
-
     /** Attendees will have the role of an attendee. */
     const ROLE_ATTENDEE = 0;
     /** Attendees will have the role of a presenter. */
@@ -109,7 +104,6 @@ class helper {
         $context = context_course::instance($teammeeting->course);
         $groupmode = static::get_groupmode_from_teammeeting($teammeeting);
         $attendeesmode = $teammeeting->attendeesmode;
-        $teachersmode = $teammeeting->teachersmode;
 
         $manager = manager::get_instance();
         $manager->require_is_available();
@@ -129,7 +123,7 @@ class helper {
             'participants' => [
                 'organizer' => helper::make_meeting_participant_info($o365user, 'presenter'),
                 'attendees' => helper::make_attendee_list($context, $organiserid, $groupid, $groupmode, $attendeesmode,
-                    $teachersmode, static::get_selected_teacher_ids($teammeeting))
+                    static::get_selected_teacher_ids($teammeeting))
             ],
             'subject' => static::generate_onlinemeeting_name($teammeeting)
         ];
@@ -330,10 +324,11 @@ class helper {
      * @param int|string $organiserid The Moodle user ID of the organiser.
      * @param int $groupid The group ID, or 0.
      * @param int $groupmode The group mode constant.
-     * @param int @attendeesmode The ATTENDEES_* constant.
+     * @param int $attendeesmode The ATTENDEES_* constant.
+     * @param int[] $teacherids The list of teachers to assign as presenters. An empty list results in no presenters.
      */
     public static function make_attendee_list(context $context, $organiserid, $groupid = 0, $groupmode = NOGROUPS,
-            $attendeesmode = self::ATTENDEES_NONE, $teachersmode = self::TEACHERS_ALL, $teacherids = []) {
+            $attendeesmode = self::ATTENDEES_NONE, $teacherids = []) {
 
         $manager = manager::get_instance();
         $skipusers = array_flip([$organiserid]);
@@ -341,7 +336,7 @@ class helper {
         // Construct the list of presenters. When a group is specified and we're in the separate groups
         // mode, then the list of presenters is limited to those who belong to the group, or who can
         // access all groups. In any other case, all presenters are attendees.
-        $presenterids = utils::limit_to_o365_users(array_keys(
+        $presenterids = !empty($teacherids) ? utils::limit_to_o365_users(array_keys(
             get_users_by_capability(
                 $context,
                 'mod/teammeeting:presentmeeting',
@@ -355,10 +350,8 @@ class helper {
                 null,
                 $groupid && $groupmode == SEPARATEGROUPS
             )
-        ));
-        if ($teachersmode == static::TEACHERS_SELECT) {
-            $presenterids = array_intersect($presenterids, $teacherids);
-        }
+        )): [];
+        $presenterids = array_intersect($presenterids, $teacherids);
         $presenters = array_filter(array_map(function($userid) use ($manager, $skipusers) {
             if (array_key_exists($userid, $skipusers)) {
                 return null; // The user is already an attendee.
@@ -497,7 +490,6 @@ class helper {
         $context = context_course::instance($courseid);
         $groupmode = static::get_groupmode_from_teammeeting($teammeeting);
         $attendeesmode = $teammeeting->attendeesmode;
-        $teachersmode = $teammeeting->teachersmode;
 
         $manager = manager::get_instance();
         $manager->require_is_available();
@@ -505,7 +497,7 @@ class helper {
         $meetingdata = [
             'participants' => [
                 'attendees' => helper::make_attendee_list($context, $meeting->organiserid, $meeting->groupid,
-                    $groupmode, $attendeesmode, $teachersmode, static::get_selected_teacher_ids($teammeeting))
+                    $groupmode, $attendeesmode, static::get_selected_teacher_ids($teammeeting))
             ]
         ];
 
