@@ -1,6 +1,12 @@
 Changelog
 =========
 
+v1.5.0
+------
+
+- Setting to support setting all attendees as presenters of meeting
+- Setting to set the list of teachers (presenters)
+
 v1.4.0
 ------
 
