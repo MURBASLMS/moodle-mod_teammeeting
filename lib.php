@@ -148,14 +148,12 @@ function teammeeting_update_instance($data, $mform) {
             $o365user = $manager->get_o365_user($meeting->organiserid);
             $meetingdata = $shareddata;
 
-            // The list of participants only need to be updated when we changed the attendeesmode.
-            // It is otherwise periodically updated when the meeting page is viewed.
-            if ($attendeesmodehaschanged || $teachersmodehaschanged || $teacheridshaschanged) {
-                $meetingdata['participants'] = [
-                    'attendees' => helper::make_attendee_list($context, $meeting->organiserid, $meeting->groupid,
-                        $groupmode, $data->attendeesmode, $data->teachersmode, helper::get_selected_teacher_ids($team))
-                ];
-            }
+            // Always include the participants as this field may be required by the API if other fields have
+            // been set. Moreover, we may need to empty the participants list when some other settings changed.
+            $meetingdata['participants'] = [
+                'attendees' => helper::make_attendee_list($context, $meeting->organiserid, $meeting->groupid,
+                    $groupmode, $data->attendeesmode, $data->teachersmode, helper::get_selected_teacher_ids($team))
+            ];
 
             $meetingid = $meeting->onlinemeetingid;
             $resp = $api->apicall('PATCH', "/users/{$o365user->objectid}/onlineMeetings/{$meetingid}", json_encode($meetingdata));
@@ -165,6 +163,10 @@ function teammeeting_update_instance($data, $mform) {
                 'endDateTime' => null,
                 'joinWebUrl' => null,
             ]);
+
+            // Save the last time we synced the presenters.
+            $meeting->lastpresenterssync = time();
+            $DB->set_field('teammeeting_meetings', 'lastpresenterssync', $meeting->lastpresenterssync, ['id' => $meeting->id]);
         }
     }
 

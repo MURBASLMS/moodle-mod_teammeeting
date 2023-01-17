@@ -383,7 +383,15 @@ class helper {
         }, $attendeeids));
 
         // Mandatory use of array_values to drop the keys.
-        return array_values(array_merge($presenters, $attendees));
+        $list = array_values(array_merge($presenters, $attendees));
+
+        // The list can never be empty, else the API throws an error and thus we will always include the organiser
+        // as a presenter to satisfy the API. That does not seem to have any impact on the meeting itself.
+        if (empty($list)) {
+            $list[] = helper::make_meeting_participant_info($manager->get_o365_user($organiserid), 'presenter');
+        }
+
+        return $list;
     }
 
     /**
