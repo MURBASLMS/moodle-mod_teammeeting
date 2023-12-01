@@ -110,6 +110,7 @@ $string['sessionrequiresorganiserinstructions'] = 'This session requires an orga
 $string['teammeeting:addinstance'] = 'Add a Team meeting instance';
 $string['teammeeting:presentmeeting'] = 'Whether the user can organise or present online meetings';
 $string['teammeeting:view'] = 'View a Team meeting instance';
+$string['teammeeting:viewindexlink'] = 'View link to page listing course instances';
 $string['usinggroupsbutnogroupsavailable'] = 'This activity is using groups, but none of the groups are available to you.';
 $string['waitinstead'] = 'Wait instead';
 $string['whatwouldyouliketodo'] = 'What would you like to do?';

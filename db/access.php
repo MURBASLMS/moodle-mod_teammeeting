@@ -54,4 +54,15 @@ $capabilities = [
             'editingteacher' => CAP_ALLOW,
         ],
     ],
+
+    'mod/teammeeting:viewindexlink' => [
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_COURSE,
+        'archetypes' => [
+            'teacher' => CAP_ALLOW,
+            'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW,
+        ],
+        'clonepermissionsfrom' => 'mod/teammeeting:addinstance'
+    ],
 ];

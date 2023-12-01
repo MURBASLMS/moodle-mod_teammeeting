@@ -300,3 +300,20 @@ function teammeeting_print_details_dates($team, $format = 'html') {
 
     return '';
 }
+
+/**
+ * Extend the course navigation.
+ *
+ * @param navigation_node $coursenode The course node.
+ * @param object $course The course.
+ * @param context_course $context The course context.
+ */
+function teammeeting_extend_navigation_course(navigation_node $coursenode, $course, $context) {
+    if (!has_capability('mod/teammeeting:viewindexlink', $context)) {
+        return;
+    }
+    $coursenode->add(
+        get_string('modulenameplural', 'mod_teammeeting'),
+        new moodle_url('/mod/teammeeting/index.php', ['id' => $course->id])
+    );
+}
