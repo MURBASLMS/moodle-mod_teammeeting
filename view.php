@@ -56,6 +56,7 @@ $PAGE->set_url('/mod/teammeeting/view.php', $pageparams);
 $PAGE->set_title($course->shortname . ': ' . $resource->name);
 $PAGE->set_heading($course->fullname);
 $PAGE->set_activity_record($resource);
+$PAGE->add_body_class('limitedwidth');
 
 $canmanage = has_capability('mod/teammeeting:addinstance', $context);
 $canpresent = has_capability('mod/teammeeting:presentmeeting', $context);
@@ -130,8 +131,6 @@ if ($groupid === null) {
 if ($groupid === null) {
     echo $OUTPUT->header();
 
-    echo $OUTPUT->heading(format_string($resource->name), 2);
-
     if (empty($usergroups) && empty($othergroups)) {
         $notification = new \core\output\notification(get_string('usinggroupsbutnogroupsavailable', 'mod_teammeeting'),
             \core\output\notification::NOTIFY_ERROR);
@@ -139,10 +138,6 @@ if ($groupid === null) {
         echo $OUTPUT->render($notification);
         echo $OUTPUT->footer();
         die();
-    }
-
-    if (!empty($resource->intro)) {
-        echo $OUTPUT->box(format_module_intro('teammeeting', $resource, $cm->id), 'generalbox', 'intro');
     }
 
     $meetingsbygroupid = array_reduce(
@@ -205,10 +200,7 @@ if (!empty($meeting->organiserid) && empty($meetingurl) && ($canmanage || $canpr
 // without cycling back through this page.
 if (empty($meeting->organiserid) || empty($meetingurl)) {
     echo $OUTPUT->header();
-    echo $OUTPUT->heading(format_string($resource->name), 2);
-    if (!empty($resource->intro)) {
-        echo $OUTPUT->box(format_module_intro('teammeeting', $resource, $cm->id), 'generalbox', 'intro');
-    }
+
     echo teammeeting_print_details_dates($resource);
 
     echo $OUTPUT->render_from_template('mod_teammeeting/lobby', [
@@ -254,11 +246,6 @@ if ($redirect) {
 
 // Display the page.
 echo $OUTPUT->header();
-echo $OUTPUT->heading(format_string($resource->name), 2);
-
-if (!empty($resource->intro)) {
-    echo $OUTPUT->box(format_module_intro('teammeeting', $resource, $cm->id), 'generalbox', 'intro');
-}
 
 echo teammeeting_print_details_dates($resource);
 
