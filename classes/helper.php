@@ -335,8 +335,9 @@ class helper {
 
         // Construct the list of presenters. When a group is specified and we're in the separate groups
         // mode, then the list of presenters is limited to those who belong to the group, or who can
-        // access all groups. In any other case, all presenters are attendees.
-        $presenterids = !empty($teacherids) ? utils::limit_to_o365_users(array_keys(
+        // access all groups. In any other case, all presenters are attendees. These are the people
+        // with the presentmeeting permisssion, which means more than just being a meeting 'presenter'.
+        $candidatepresenterids = !empty($teacherids) ? utils::limit_to_o365_users(array_keys(
             get_users_by_capability(
                 $context,
                 'mod/teammeeting:presentmeeting',
@@ -351,7 +352,26 @@ class helper {
                 $groupid && $groupmode == SEPARATEGROUPS
             )
         )): [];
-        $presenterids = array_intersect($presenterids, $teacherids);
+
+        // Only the nominated teachers should be considered as a valid choice.
+        $candidatepresenterids = array_intersect($candidatepresenterids, $teacherids);
+
+        // We cannot have more than 10 coorganisers.
+        $coorganiserids = array_slice($candidatepresenterids, 0, 10);
+
+        // Take the rest of users and assign them as presenters.
+        $presenterids = array_diff($candidatepresenterids, $coorganiserids);
+
+        $coorganisers = array_filter(array_map(function($userid) use ($manager, $skipusers) {
+            if (array_key_exists($userid, $skipusers)) {
+                return null; // The user is already an attendee.
+            }
+            return helper::make_meeting_participant_info($manager->get_o365_user($userid), 'coorganizer');
+        }, $coorganiserids));
+
+        // Mark all coorganisers to be skipped as already considered.
+        $skipusers += array_flip($coorganiserids);
+
         $presenters = array_filter(array_map(function($userid) use ($manager, $skipusers) {
             if (array_key_exists($userid, $skipusers)) {
                 return null; // The user is already an attendee.
@@ -376,7 +396,7 @@ class helper {
         }, $attendeeids));
 
         // Mandatory use of array_values to drop the keys.
-        $list = array_values(array_merge($presenters, $attendees));
+        $list = array_values(array_merge($coorganisers, $presenters, $attendees));
 
         // The list can never be empty, else the API throws an error and thus we will always include the organiser
         // as a presenter to satisfy the API. That does not seem to have any impact on the meeting itself.

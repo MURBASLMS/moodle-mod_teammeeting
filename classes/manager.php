@@ -27,7 +27,7 @@ namespace mod_teammeeting;
 
 use local_o365\obj\o365user;
 use local_o365\rest\unified;
-use local_o365\utils;
+use mod_teammeeting\local\o365\api_utils;
 use moodle_exception;
 
 defined('MOODLE_INTERNAL') || die();
@@ -44,6 +44,8 @@ class manager {
 
     /** @var static */
     protected static $instance;
+    /** @var unified The API. */
+    protected $api;
 
     /**
      * Get the API.
@@ -51,7 +53,10 @@ class manager {
      * @return unified
      */
     public function get_api() {
-        return utils::get_api();
+        if ($this->api === null) {
+            $this->api = api_utils::get_api();
+        }
+        return $this->api;
     }
 
     /**

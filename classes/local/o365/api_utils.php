@@ -15,17 +15,36 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version.
+ * Helper.
  *
  * @package    mod_teammeeting
- * @copyright  2020 Université Clermont Auvergne
+ * @copyright  2024 Murdoch University
+ * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+namespace mod_teammeeting\local\o365;
 
-$plugin->version   = 2024011700;
-$plugin->requires  = 2020061500;    // Moodle 3.9.0.
-$plugin->component = 'mod_teammeeting';
-$plugin->release   = 'v1.5.2';
-$plugin->maturity  = MATURITY_STABLE;
+use local_o365\rest\o365api;
+use local_o365\utils;
+
+/**
+ * Utils.
+ *
+ * @package    mod_teammeeting
+ * @copyright  2024 Murdoch University
+ * @author     Frédéric Massart <fred@branchup.tech>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+abstract class api_utils extends o365api {
+
+    public static function get_api() {
+        $api = utils::get_api();
+
+        // Monkey-patch the API to use an updated HTTP client, mostly to be able to set request headers.
+        $api->httpclient = new httpclient();
+
+        return $api;
+    }
+
+}
