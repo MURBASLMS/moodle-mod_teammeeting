@@ -196,11 +196,13 @@ if (empty($meeting->organiserid)) {
 }
 
 // Hmm... the meeting has not yet been created but we have an organiser. A possible reason
-// for this to is that the meeting creation failed after an organiser was assigned.
-// In order to expose the error, we will attempt to recreate the meeting here, but only
-// if the user can manage or present the meeting. Students should fallback in the lobby.
+// for this to is that the meeting creation failed after an organiser was nominated. Or when
+// the default organiser was just assigned. If there was an error, to expose it, we will
+// attempt to recreate the meeting here, but only if the user can manage or present the meeting.
+// Students should fallback in the lobby.
 if (!empty($meeting->organiserid) && empty($meetingurl) && ($canmanage || $canpresentingroup)) {
     $meeting = helper::create_onlinemeeting_instance($resource, $groupid);
+    $meetingurl = $meeting->meetingurl;
 }
 
 // Wait, the meeting does not have an organiser yet (or meeting), we display the lobby.
