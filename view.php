@@ -187,6 +187,14 @@ $meeting = helper::get_meeting_record($resource, $groupid);
 $meetingurl = $meeting->meetingurl;
 $canpresentingroup = $canpresent && ($groupmode != SEPARATEGROUPS || $aag || array_key_exists($groupid, $usergroups));
 
+// Assign an organiser by default, if we can.
+if (empty($meeting->organiserid)) {
+    $meeting->organiserid = helper::get_default_organiser($resource, $groupid);
+    if (!empty($meeting->organiserid)) {
+        helper::save_meeting_record($meeting);
+    }
+}
+
 // Hmm... the meeting has not yet been created but we have an organiser. A possible reason
 // for this to is that the meeting creation failed after an organiser was assigned.
 // In order to expose the error, we will attempt to recreate the meeting here, but only

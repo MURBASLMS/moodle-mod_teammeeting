@@ -260,5 +260,20 @@ function xmldb_teammeeting_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2023011701, 'teammeeting');
     }
 
+    if ($oldversion < 2024011801) {
+
+        // Define field organiserid to be added to teammeeting.
+        $table = new xmldb_table('teammeeting');
+        $field = new xmldb_field('organiserid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'attendeesrole');
+
+        // Conditionally launch add field organiserid.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Teammeeting savepoint reached.
+        upgrade_mod_savepoint(true, 2024011801, 'teammeeting');
+    }
+
     return true;
 }

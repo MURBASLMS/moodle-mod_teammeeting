@@ -55,6 +55,13 @@ $capabilities = [
         ],
     ],
 
+    'mod/teammeeting:setorganiser' => [
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_COURSE,
+        'archetypes' => [],
+        'clonepermissionsfrom' => 'mod/teammeeting:addinstance'
+    ],
+
     'mod/teammeeting:viewindexlink' => [
         'captype' => 'read',
         'contextlevel' => CONTEXT_COURSE,

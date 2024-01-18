@@ -23,6 +23,7 @@
  */
 
 use core\output\notification;
+use local_o365\utils;
 use mod_teammeeting\helper;
 use mod_teammeeting\manager;
 
@@ -47,6 +48,7 @@ class mod_teammeeting_mod_form extends moodleform_mod {
         global $USER, $OUTPUT;
         $mform = $this->_form;
 
+        $cansetorganiser = has_capability('mod/teammeeting:setorganiser', $this->context);
         $manager = manager::get_instance();
 
         if (!$manager->is_available()) {
@@ -109,6 +111,24 @@ class mod_teammeeting_mod_form extends moodleform_mod {
 
         $mform->hideIf('opendate', 'reusemeeting', 'eq', 1);
         $mform->hideIf('closedate', 'reusemeeting', 'eq', 1);
+
+        // Only some people can set the organiser here, hide from everybody else.
+        if ($cansetorganiser) {
+            $potentialorganisers = array_map(function($user) {
+                return fullname($user);
+            }, get_enrolled_users($this->context, 'mod/teammeeting:presentmeeting', 0, 'u.*', 'u.lastname ASC'));
+            $validorganiserids = utils::limit_to_o365_users(array_keys($potentialorganisers));
+            $potentialorganisers = [0 => get_string('nonespecified', 'mod_teammeeting')] + array_intersect_key($potentialorganisers,
+                array_flip($validorganiserids));
+
+            $mform->addElement('select', 'organiserid', get_string('defaultorganiser', 'mod_teammeeting'), $potentialorganisers);
+            $mform->addHelpButton('organiserid', 'defaultorganiser', 'mod_teammeeting');
+
+            $caneditorganiser = $this->can_organiser_be_changed();
+            if (!$caneditorganiser) {
+                $mform->hardFreeze('organiserid');
+            }
+        }
 
         // Additional teachers.
         $potentialpresenters = array_map(function($user) {
@@ -214,6 +234,11 @@ class mod_teammeeting_mod_form extends moodleform_mod {
         if (!empty($defaultvalues['teacherids'])) {
             $defaultvalues['teacherids'] = explode(',', $defaultvalues['teacherids']);
         }
+
+        // Ensure value is zero when empty.
+        if (empty($defaultvalues['organiserid'])) {
+            $defaultvalues['organiserid'] = 0;
+        }
     }
 
     /**
@@ -263,6 +288,28 @@ class mod_teammeeting_mod_form extends moodleform_mod {
         $data->teacherids = implode(',', array_map(function($value) {
             return (int) $value;
         }, (array) ($data->teacherids ?? [])));
+
+        // When organiserid has been provided, convert to int.
+        if ($data->organiserid ?? null !== null) {
+            $data->organiserid = (int) $data->organiserid;
+        }
+    }
+
+    /**
+     * Whether the organiser can be edited.
+     *
+     * @return bool
+     */
+    protected function can_organiser_be_changed() {
+        global $DB;
+
+        $isedit = !empty($this->current) && !empty($this->current->id);
+        if (!$isedit) {
+            return true;
+        }
+
+        // We can't if any meeting already has an organiser.
+        return !$DB->record_exists_select('teammeeting_meetings', 'teammeetingid = ? AND organiserid > 0', [$this->current->id]);
     }
 
     /**

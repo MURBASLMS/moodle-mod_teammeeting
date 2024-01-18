@@ -193,6 +193,20 @@ class helper {
     }
 
     /**
+     * Get the default organiser.
+     *
+     * The default organiser is the recommended organiser for a particular meeting/group combination.
+     * The calling code can decide to enforce this value, or let the user choose a different organiser.
+     *
+     * @param object $teammeeting The teammeeting instance record.
+     * @param int $groupid The group ID.
+     * @return int|null
+     */
+    public static function get_default_organiser($teammeeting, $groupid) {
+        return $teammeeting->organiserid ?: null;
+    }
+
+    /**
      * Generate an online meeting instance's name.
      *
      * @param object $teammeeting The database record.
