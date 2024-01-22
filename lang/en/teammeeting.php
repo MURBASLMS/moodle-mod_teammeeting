@@ -26,7 +26,7 @@ defined('MOODLE_INTERNAL') || die();
 
 $string['active'] = 'Active';
 $string['additionalteachers'] = 'Additional teachers';
-$string['additionalteachers_help'] = 'This field allows you to allocate staff in addition to the meeting organiser. Additional staff will be added to the chat in Teams, regardless of whether they join the meeting. Please note: the meeting organiser will still need to be nominated after the creation of this activity.';
+$string['additionalteachers_help'] = 'This field allows you to allocate staff in addition to the meeting organiser. Additional staff will be added to the chat in Teams, regardless of whether they join the meeting. Please note: unless set in the organiser field above, the meeting organiser will still need to be nominated after the creation of this activity.';
 $string['allowchat'] = 'Meeting chat';
 $string['allowchat_help'] = 'When the chat is set to "Enabled during meeting", students can chat while the meeting is ongoing, but not once it has ended. Set this to "Always enabled" to let students use the chat after the meeting ends.';
 $string['alreadyorganiserofothersession'] = 'Already the organiser of another session.';
@@ -55,7 +55,7 @@ $string['closedate_help'] = 'If left blank, the default duration of the meeting 
 $string['closedate'] = 'Closing date of the meeting';
 $string['copylink'] = 'Copy the meeting link to the clipboard';
 $string['defaultorganiser'] = 'Meeting organiser';
-$string['defaultorganiser_help'] = 'When specified, the user will be set as the organiser for all instances of this session (including groups if used). This value cannot be changed once a session has been created. Only users with the permission to present will be listed here. When left blank, users with the permission to present will be offered to nominate themselves as organiser.';
+$string['defaultorganiser_help'] = 'When specified, the user will be set as the organiser for all instances of this session (including groups if used). This value cannot be changed once a session has been created. Only users with the permission to present will be listed here. When left blank, users with the permission to present will be offered to nominate themselves as organiser. When an organiser is nominated rather than set here, this setting will show "none selected" and can't be changed, but you can see the organisers set on the index page.';
 $string['enabledduringmeeting'] = 'Enabled during meeting';
 $string['errordates'] = 'The closing date must come after the start date.';
 $string['errordatespast'] = 'The closing date cannot be set in the past.';
