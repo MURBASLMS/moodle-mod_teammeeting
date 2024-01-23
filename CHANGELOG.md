@@ -1,6 +1,23 @@
 Changelog
 =========
 
+v1.6.0
+------
+
+- Ability to set the default organiser of instance meetings
+- Additional teachers now define co-organisers instead of presenters
+- In rare occasion, the lobby could be shown instead of redirecting to the meeting
+
+v1.5.2
+------
+
+- Update navigation following Moodle 4.x update
+
+v1.5.1
+------
+
+- Add link to index page to course navigation
+
 v1.5.0
 ------
 
