@@ -1,6 +1,11 @@
 Changelog
 =========
 
+v1.6.1
+------
+
+- Fixed malformatted language file
+
 v1.6.0
 ------
 
