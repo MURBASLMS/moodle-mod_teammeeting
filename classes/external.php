@@ -26,9 +26,10 @@
 namespace mod_teammeeting;
 
 use context_course;
-use external_function_parameters;
-use external_single_structure;
-use external_value;
+use core_external\external_api;
+use core_external\external_function_parameters;
+use core_external\external_single_structure;
+use core_external\external_value;
 use moodle_exception;
 
 defined('MOODLE_INTERNAL') || die();
@@ -41,7 +42,7 @@ defined('MOODLE_INTERNAL') || die();
  * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class external extends \external_api {
+class external extends external_api {
 
     /**
      * External function parameters.
