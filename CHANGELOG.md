@@ -1,6 +1,12 @@
 Changelog
 =========
 
+v1.7.0
+------
+
+- Compatibility with Moodle 4.4
+- Raised minimum required version to Moodle 4.4
+
 v1.6.1
 ------
 
