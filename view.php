@@ -22,8 +22,6 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use mod_teammeeting\helper;
-
 require_once(__DIR__ . '/../../config.php');
 require_once($CFG->dirroot . '/mod/teammeeting/lib.php');
 require_once($CFG->libdir . '/completionlib.php');
@@ -34,106 +32,44 @@ $u = optional_param('u', 0, PARAM_INT); // Team instance id.
 $redirect = optional_param('redirect', 0, PARAM_BOOL);
 $groupid = optional_param('groupid', null, PARAM_INT);
 
-if ($u) { // Two ways to specify the module.
-    $resource = $DB->get_record('teammeeting', array('id' => $u), '*', MUST_EXIST);
-    $cm = get_coursemodule_from_instance('teammeeting', $resource->id, $resource->course, false, MUST_EXIST);
+if ($u) {
+    $cmid = get_coursemodule_from_instance('teammeeting', $u, 0, false, MUST_EXIST)->id;
 } else {
-    $cm = get_coursemodule_from_id('teammeeting', $id, 0, false, MUST_EXIST);
-    $resource = $DB->get_record('teammeeting', array('id' => $cm->instance), '*', MUST_EXIST);
+    $cmid = $id;
 }
-$course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
 
-require_course_login($course, true, $cm);
+$view = new \mod_teammeeting\meeting_view($cmid, $groupid);
+$data = $view->get_page_data();
 
-$context = context_module::instance($cm->id);
-require_capability('mod/teammeeting:view', $context);
-
-$pageparams = ['id' => $cm->id];
+// Set up page.
+$PAGE->set_url('/mod/teammeeting/view.php', ['id' => $data['cm']->id]);
 if ($groupid !== null) {
-    $pageparams['groupid'] = $groupid;
+    $PAGE->url->param('groupid', $groupid);
 }
-$PAGE->set_url('/mod/teammeeting/view.php', $pageparams);
-$PAGE->set_title($course->shortname . ': ' . $resource->name);
-$PAGE->set_heading($course->fullname);
-$PAGE->set_activity_record($resource);
+$PAGE->set_title($data['course']->shortname . ': ' . $data['teammeeting']->name);
+$PAGE->set_heading($data['course']->fullname);
+$PAGE->set_activity_record($data['teammeeting']);
 $PAGE->add_body_class('limitedwidth');
 
-$canmanage = has_capability('mod/teammeeting:addinstance', $context);
-$canpresent = has_capability('mod/teammeeting:presentmeeting', $context);
-$courseurl = new moodle_url('/course/view.php', array('id' => $cm->course));
+$courseurl = new moodle_url('/course/view.php', array('id' => $data['cm']->course));
 
-// If it's a once off online meeting, and we're not within the open dates,
-// advise students to come back at a later time.
-if (!$resource->reusemeeting) {
-    $isclosed = $resource->opendate > time() || $resource->closedate < time();
-    if (!$canmanage && $isclosed) {
-        notice(get_string('meetingnotavailable', 'mod_teammeeting', teammeeting_print_details_dates($resource, "text")),
-            $courseurl);
-        die();
-    }
-}
-
-// When the activity is specifically restricted to a single group, emulate user having chosen it.
-if (!empty($resource->groupid)) {
-    $groupid = $resource->groupid;
-}
-
-// If the user cannot access the group provided.
-if ($groupid !== null && !helper::can_access_group($resource, $USER->id, $groupid)) {
-    if (!empty($resource->groupid)) {
-        // The group is forced at the activity level, we cannot continue.
-        throw new moodle_exception('cannotaccessgroup', 'mod_teammeeting');
-    }
-    // Reset the group ID to let the default behaviour take place.
-    $groupid = null;
-}
-
-// Broadcast module viewed event.
-$event = \mod_teammeeting\event\course_module_viewed::create([
-    'context' => $context,
-    'objectid' => $resource->id
-]);
-$event->add_record_snapshot('course_modules', $cm);
-$event->add_record_snapshot('course', $course);
-$event->add_record_snapshot('teammeeting', $resource);
-$event->trigger();
-
-// Mark activity has having been viewed.
-$completion = new completion_info($course);
-$completion->set_module_viewed($cm);
-
-// Identify the meeting, via the group mode.
-$aag = has_capability('moodle/site:accessallgroups', $context);
-$groupmode = groups_get_activity_groupmode($cm, $course);
-
-$usegroups = $groupmode != NOGROUPS;
-$allgroups = [];
-$usergroups = [];
-$othergroups = [];
-
-if ($groupmode == VISIBLEGROUPS || $aag) {
-    $allgroups = groups_get_all_groups($cm->course, 0, $cm->groupingid);
-    $usergroups = groups_get_all_groups($cm->course, $USER->id, $cm->groupingid);
-    $othergroups = array_diff_key($allgroups, $usergroups);
-} else if ($groupmode == SEPARATEGROUPS) {
-    $usergroups = groups_get_all_groups($cm->course, $USER->id, $cm->groupingid);
-    $allgroups = $usergroups;
-}
-
-// If we do not use groups, or there is only one group to select from.
-if ($groupid === null) {
-    if (!$usegroups || (count($usergroups) === 1 && empty($othergroups))) {
-        $groupid = $usegroups ? reset($usergroups)->id : 0;
-    }
+// Check availability.
+if (!$view->is_meeting_available() && !$data['canmanage']) {
+    notice(get_string('meetingnotavailable', 'mod_teammeeting', 
+        teammeeting_print_details_dates($data['teammeeting'], "text")),
+        $courseurl);
+    die();
 }
 
 // The user should be choosing a group.
-if ($groupid === null) {
+if ($data['groupid'] === null) {
     echo $OUTPUT->header();
 
-    if (empty($usergroups) && empty($othergroups)) {
-        $notification = new \core\output\notification(get_string('usinggroupsbutnogroupsavailable', 'mod_teammeeting'),
-            \core\output\notification::NOTIFY_ERROR);
+    if (empty($data['usergroups']) && empty($data['othergroups'])) {
+        $notification = new \core\output\notification(
+            get_string('usinggroupsbutnogroupsavailable', 'mod_teammeeting'),
+            \core\output\notification::NOTIFY_ERROR
+        );
         $notification->set_show_closebutton(false);
         echo $OUTPUT->render($notification);
         echo $OUTPUT->footer();
@@ -141,7 +77,7 @@ if ($groupid === null) {
     }
 
     $meetingsbygroupid = array_reduce(
-        $DB->get_records('teammeeting_meetings', ['teammeetingid' => $resource->id]),
+        $DB->get_records('teammeeting_meetings', ['teammeetingid' => $data['teammeeting']->id]),
         function($carry, $record) {
             $carry[$record->groupid] = $record;
             return $carry;
@@ -149,8 +85,7 @@ if ($groupid === null) {
         []
     );
 
-    echo teammeeting_print_details_dates($resource);
-
+    echo teammeeting_print_details_dates($data['teammeeting']);
     echo html_writer::tag('p', get_string('selectgroupformeeting', 'mod_teammeeting'));
 
     $table = new flexible_table('teammeeting-groups');
@@ -159,108 +94,64 @@ if ($groupid === null) {
     $table->define_headers([get_string('group', 'core'), get_string('organiser', 'mod_teammeeting')]);
     $table->setup();
     $table->start_output();
-    foreach ($usergroups as $group) {
+
+    foreach ($data['usergroups'] as $group) {
         $url = new moodle_url($PAGE->url, ['groupid' => $group->id, 'redirect' => 1]);
         $meeting = isset($meetingsbygroupid[$group->id]) ? $meetingsbygroupid[$group->id] : null;
         $organiser = $meeting && !empty($meeting->organiserid) ? core_user::get_user($meeting->organiserid) : null;
         $organisername = $organiser ? fullname($organiser) : '';
         $table->add_data([html_writer::link($url, format_string($group->name)), $organisername]);
     }
-    if (!empty($usergroups) && !empty($othergroups)) {
+
+    if (!empty($data['usergroups']) && !empty($data['othergroups'])) {
         $table->add_data([html_writer::tag('strong', get_string('othergroups', 'mod_teammeeting')), '']);
     }
-    foreach ($othergroups as $group) {
+
+    foreach ($data['othergroups'] as $group) {
         $url = new moodle_url($PAGE->url, ['groupid' => $group->id, 'redirect' => 1]);
         $meeting = isset($meetingsbygroupid[$group->id]) ? $meetingsbygroupid[$group->id] : null;
         $organiser = $meeting && !empty($meeting->organiserid) ? core_user::get_user($meeting->organiserid) : null;
         $organisername = $organiser ? fullname($organiser) : '';
         $table->add_data([html_writer::link($url, format_string($group->name)), $organisername]);
     }
-    $table->finish_output();
 
+    $table->finish_output();
     echo $OUTPUT->footer();
     return;
 }
 
-// Get the meeting record for this group.
-$meeting = helper::get_meeting_record($resource, $groupid);
-$meetingurl = $meeting->meetingurl;
-$canpresentingroup = $canpresent && ($groupmode != SEPARATEGROUPS || $aag || array_key_exists($groupid, $usergroups));
+$meeting = $view->get_meeting();
 
-// Assign an organiser by default, if we can.
-if (empty($meeting->organiserid)) {
-    $meeting->organiserid = helper::get_default_organiser($resource, $groupid);
-    if (!empty($meeting->organiserid)) {
-        helper::save_meeting_record($meeting);
-    }
+// Update presenters if needed.
+if ($view->should_update_presenters()) {
+    $view->update_presenters();
 }
 
-// Hmm... the meeting has not yet been created but we have an organiser. A possible reason
-// for this to is that the meeting creation failed after an organiser was nominated. Or when
-// the default organiser was just assigned. If there was an error, to expose it, we will
-// attempt to recreate the meeting here, but only if the user can manage or present the meeting.
-// Students should fallback in the lobby.
-if (!empty($meeting->organiserid) && empty($meetingurl) && ($canmanage || $canpresentingroup)) {
-    $meeting = helper::create_onlinemeeting_instance($resource, $groupid);
-    $meetingurl = $meeting->meetingurl;
-}
-
-// Wait, the meeting does not have an organiser yet (or meeting), we display the lobby.
-// From the lobby, users will be automatically redirected to the meeting
-// without cycling back through this page.
-if (empty($meeting->organiserid) || empty($meetingurl)) {
+// Show lobby if meeting not ready.
+if (empty($meeting->organiserid) || empty($meeting->meetingurl)) {
     echo $OUTPUT->header();
-
-    echo teammeeting_print_details_dates($resource);
-
+    echo teammeeting_print_details_dates($data['teammeeting']);
     echo $OUTPUT->render_from_template('mod_teammeeting/lobby', [
-        'canpresent' => $canpresentingroup,
-        'teammeetingid' => $resource->id,
-        'groupid' => $groupid
+        'canpresent' => $view->can_present_in_group(),
+        'teammeetingid' => $data['teammeeting']->id,
+        'groupid' => $data['groupid']
     ]);
-
     echo $OUTPUT->footer();
     die();
 }
 
-// Update the list of presenters. We do not need to do this for meetings that have an
-// end date, but that is already filtered above. In all other cases, it's best that we
-// update this every 5 minutes to make sure we're in sync with the latest roles before
-// the meeting is launched. Once the meeting is started (1 attendee joins), changes
-// to the meeting role & permissions will not have effect until all attendees leave and
-// join again.
-$shouldupdatepresenters = !empty($meeting->id) && $meeting->lastpresenterssync < time() - 5 * 60;
-if ($shouldupdatepresenters) {
-    // We update the lastpresenterssync right away to limit the number of concurrent requests that sync.
-    $origlastpresenterssync = $meeting->lastpresenterssync;
-    $meeting->lastpresenterssync = time();
-    $DB->set_field('teammeeting_meetings', 'lastpresenterssync', $meeting->lastpresenterssync, ['id' => $meeting->id]);
-    try {
-        helper::update_teammeeting_instance_attendees($resource, $meeting);
-    } catch (Exception $e) {
-        $DB->set_field('teammeeting', 'lastpresenterssync', $origlastpresenterssync, ['id' => $meeting->id]);
-        throw $e;
-    }
-}
-
-// If a redirect is request.
+// Handle redirect.
 if ($redirect) {
-
-    // When the course does not have a view page, we should not redirect teachers right-away,
-    // or they could be stuck not being able to edit the page. We always show them the intermediate page.
-    $hascoursepage = course_get_format($course)->has_view_page();
-    if ($hascoursepage || !$canmanage) {
-        redirect($meetingurl);
+    $hascoursepage = course_get_format($data['course'])->has_view_page();
+    if ($hascoursepage || !$data['canmanage']) {
+        redirect($meeting->meetingurl);
     }
 }
 
 // Display the page.
 echo $OUTPUT->header();
-
-echo teammeeting_print_details_dates($resource);
-
+echo teammeeting_print_details_dates($data['teammeeting']);
 echo $OUTPUT->render_from_template('mod_teammeeting/view', [
-    'meetingurl' => $meetingurl
+    'meetingurl' => $meeting->meetingurl
 ]);
-
 echo $OUTPUT->footer();

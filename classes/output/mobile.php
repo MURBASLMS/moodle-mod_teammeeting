@@ -45,45 +45,34 @@ class mobile {
      * @return object
      */
     public static function mobile_course_view($args) {
-        global $OUTPUT, $DB;
+        global $OUTPUT;
 
         $args = (object) $args;
-        $cm = get_coursemodule_from_id('teammeeting', $args->cmid);
-        $context = \context_module::instance($cm->id);
-
-        require_login($args->courseid, false, $cm, true, true);
-        require_capability('mod/teammeeting:view', $context);
-
-        $meeting = $DB->get_record('teammeeting', ['id' => $cm->instance], '*', MUST_EXIST);
-        $course = get_course($cm->course);
-        $canmanage = has_capability('mod/teammeeting:addinstance', $context);
+        $view = new \mod_teammeeting\meeting_view($args->cmid);
+        $data = $view->get_page_data();
 
         // Pre-format some of the texts for the mobile app.
-        $meeting->name = external_format_string($meeting->name, $context);
-        list($meeting->intro, $meeting->introformat) = external_format_text($meeting->intro, $meeting->introformat,
-            $context, 'mod_teammeeting', 'intro');
+        $data['teammeeting']->name = external_format_string($data['teammeeting']->name, $data['context']);
+        list($data['teammeeting']->intro, $data['teammeeting']->introformat) = 
+            external_format_text($data['teammeeting']->intro, $data['teammeeting']->introformat,
+                $data['context'], 'mod_teammeeting', 'intro');
 
-        $details = teammeeting_print_details_dates($meeting, "text");
-        $gotoresource = true;
+        $details = teammeeting_print_details_dates($data['teammeeting'], "text");
+        $gotoresource = $view->is_meeting_available() || $data['canmanage'];
 
-        // Once off online meeting.
-        if (!$meeting->reusemeeting) {
-            $isclosed = $meeting->opendate > time() || $meeting->closedate < time();
-            if (!$canmanage && $isclosed) {
-                $details = get_string('meetingnotavailable', 'mod_teammeeting', teammeeting_print_details_dates($meeting, "text"));
-                $gotoresource = false;
-            }
+        if (!$gotoresource) {
+            $details = get_string('meetingnotavailable', 'mod_teammeeting', 
+                teammeeting_print_details_dates($data['teammeeting'], "text"));
         }
 
-        $defaulturl = new \moodle_url('/course/view.php', array('id' => $course->id));
-        $defaulturl = $defaulturl->out();
-
-        $data = [
-            'cmid' => $cm->id,
-            'meeting' => $meeting,
+        $defaulturl = new \moodle_url('/course/view.php', array('id' => $data['course']->id));
+        
+        $templatedata = [
+            'cmid' => $data['cm']->id,
+            'meeting' => $data['teammeeting'],
             'details' => $details,
             'gotoresource' => $gotoresource,
-            'defaulturl' => $defaulturl
+            'defaulturl' => $defaulturl->out()
         ];
 
         return [
