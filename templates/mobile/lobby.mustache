@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template mod_teammeeting/mobile_view
+    @template mod_teammeeting/mobile/lobby
 
     Render the main view for the mobile app.
 
@@ -27,17 +27,17 @@
 
     Context variables required for this template:
     * cmid - [int] Course module identifier.
-    * meeting - [object]
-    * meeting.id - [int] Subcourse instance ID.
-    * meeting.intro - [string] Formatted activity description.
+    * resource - [object]
+    * resource.intro - [string] Formatted activity description.
+    * resource.externalurl - [string] The URL.
     * details - [string] Details to be displayed to the user.
 
     Example context (json): @todo change example
     {
         "cmid": 42,
-        "meeting": {
-            "id": 24,
+        "resource": {
             "intro": "<h3>Activity description</h3>"
+            "externalurl": "https://example.com"
         },
         "details": ""
     }
@@ -46,7 +46,7 @@
 {{=<% %>=}}
 <div>
     <core-course-module-description
-            description="<% meeting.intro %>"
+            description="<% resource.intro %>"
             component="mod_teammeeting"
             componentId="<% cmid %>">
     </core-course-module-description>
@@ -62,22 +62,9 @@
             </ion-item>
         <%/ details %>
 
-        <%^ gotoresource %>
-            <ion-item>
-                <button ion-button block core-link capture="true" href="<% defaulturl %>">
-                    <ion-icon name="link" role="img" start class="icon icon-md ion-md-link" aria-label="link" style="padding-right: .3em;"></ion-icon>
-                    {{ 'plugin.mod_teammeeting.returntocourse' | translate }}
-                </button>
-            </ion-item>
-        <%/ gotoresource %>
-        <%# gotoresource %>
-            <ion-item>
-                <button ion-button block core-link capture="true" href="<% meeting.externalurl %>">
-                    <ion-icon name="link" role="img" start class="icon icon-md ion-md-link" aria-label="link" style="padding-right: .3em;"></ion-icon>
-                    {{ 'plugin.mod_teammeeting.gotoresource' | translate }}
-                </button>
-            </ion-item>
-        <%/ gotoresource %>
+        <ion-item>
+            {{ 'plugin.mod_teammeeting.sessionnotreadytryagainlater' | translate }}
+        </ion-item>
 
     </ion-list>
 </div>

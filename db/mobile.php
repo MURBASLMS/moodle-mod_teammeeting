@@ -41,6 +41,8 @@ $addons = [
             ['pluginname', 'mod_teammeeting'],
             ['gotoresource', 'mod_teammeeting'],
             ['returntocourse', 'mod_teammeeting'],
+            ['sessionnotreadytryagainlater', 'mod_teammeeting'],
+            ['viewontheweb', 'mod_teammeeting'],
         ],
     ],
 ];

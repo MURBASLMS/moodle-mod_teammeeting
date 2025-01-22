@@ -17,6 +17,7 @@
 /**
  * Provides {@see \mod_teammeeting\output\mobile} class.
  *
+ * @package    mod_teammeeting
  * @copyright  2021 Anthony Durif
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -45,41 +46,63 @@ class mobile {
      * @return object
      */
     public static function mobile_course_view($args) {
-        global $OUTPUT;
-
         $args = (object) $args;
-        $view = new \mod_teammeeting\meeting_view($args->cmid);
-        $data = $view->get_page_data();
+        $requestedgroupid = $args->groupid ?? null;
 
-        // Pre-format some of the texts for the mobile app.
-        $data['teammeeting']->name = external_format_string($data['teammeeting']->name, $data['context']);
-        list($data['teammeeting']->intro, $data['teammeeting']->introformat) = 
-            external_format_text($data['teammeeting']->intro, $data['teammeeting']->introformat,
-                $data['context'], 'mod_teammeeting', 'intro');
+        $view = new \mod_teammeeting\view($args->cmid);
+        $view->require_login();
+        $view->require_can_view();
 
-        $details = teammeeting_print_details_dates($data['teammeeting'], "text");
-        $gotoresource = $view->is_meeting_available() || $data['canmanage'];
+        $cm = $view->get_cm();
+        $resource = $view->get_resource();
+        $details = teammeeting_print_details_dates($resource, "text");
+        $courseurl = (new \moodle_url('/course/view.php', ['id' => $view->get_course()->id]));
+        $cmurl = (new \moodle_url('/mod/teammeeting/view.php', ['id' => $cm->id]));
 
-        if (!$gotoresource) {
-            $details = get_string('meetingnotavailable', 'mod_teammeeting', 
-                teammeeting_print_details_dates($data['teammeeting'], "text"));
-        }
-
-        $defaulturl = new \moodle_url('/course/view.php', array('id' => $data['course']->id));
-        
-        $templatedata = [
-            'cmid' => $data['cm']->id,
-            'meeting' => $data['teammeeting'],
+        $tplcontext = [
+            'cmid' => $cm->id,
+            'resource' => $resource,
             'details' => $details,
-            'gotoresource' => $gotoresource,
-            'defaulturl' => $defaulturl->out()
+            'gotoresource' => true,
+            'courseurl' => $courseurl->out(),
+            'cmurl' => $cmurl->out(),
         ];
 
+        if (!$view->is_meeting_available()) {
+            return static::make_simple_response('unavailable', $tplcontext);
+        }
+
+        $view->set_requested_group_id($requestedgroupid);
+        $view->mark_as_viewed();
+
+        if ($view->must_select_group()) {
+            return static::make_simple_response('select-group', $tplcontext);
+        }
+
+        if ($view->should_display_lobby()) {
+            return static::make_simple_response('lobby', $tplcontext);
+        }
+
+        if ($view->should_update_presenters()) {
+            $view->update_presenters();
+        }
+
+        return static::make_simple_response('view', $tplcontext + ['meeting' => $view->get_meeting()]);
+    }
+
+    /**
+     * Make a simple response.
+     *
+     * @param string $template The template.
+     * @param object $context The context.
+     */
+    protected static function make_simple_response($template, $context) {
+        global $OUTPUT;
         return [
             'templates' => [
                 [
-                    'id' => 'main',
-                    'html' => $OUTPUT->render_from_template('mod_teammeeting/mobile_view', $data),
+                    'id' => $template,
+                    'html' => $OUTPUT->render_from_template('mod_teammeeting/mobile/' . $template, $context),
                 ],
             ],
             'javascript' => '',
