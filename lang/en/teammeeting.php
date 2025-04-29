@@ -88,12 +88,17 @@ $string['pluginname'] = 'Team meeting';
 $string['prefixonlinemeetingname'] = 'Prefix online meeting name';
 $string['prefixonlinemeetingname_help'] = 'When enabled, the name of the onlineMeeting instance will be prefixed with the course short name.';
 $string['privacy:metadata'] = 'The plugin does not store or transmit any personal data.';
-$string['restrictedtogroup'] = 'Restricted to group';
-$string['restrictedtogroup_help'] = 'Restrict access to this meeting to a given group.
+$string['restrictedtogroup'] = 'Restrict membership and access to group';
+$string['restrictedtogroup_help'] = 'Restrict access and membership to this meeting to a given group.
 
-This settings mostly acts as a shortcut to set other settings such as the "Group mode" and "Restrict access", which will be set automatically.
+This setting does several things:
 
-This setting is also used to generate the list of attendees of the meeting.
+- It ensures only group members are given access to the meeting
+- It adds a "Restrict acccess" condition to hide the meeting from non-members
+- It sets the activity\'s group mode to "Separate groups"
+- When "Student membership" is forced, all group members are made a member of the meeting
+
+Together, these ensure that the meeting is only visible and accessible to the right audience.
 
 Note that you should manually check the values of "Group mode" and "Restrict access" when reverting this setting to "None selected".';
 $string['returntocourse'] = 'Return to the course';

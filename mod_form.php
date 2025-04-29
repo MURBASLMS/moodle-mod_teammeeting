@@ -149,6 +149,18 @@ class mod_teammeeting_mod_form extends moodleform_mod {
         ]);
         $mform->addHelpButton('attendeesmode', 'attendeesmode', 'mod_teammeeting');
 
+        // Group restriction.
+        $groups = ['' => get_string('noneselected', 'mod_teammeeting')] + array_map(function($group) {
+            return $group->name;
+        }, groups_get_all_groups($this->get_course()->id));
+        $mform->addElement('autocomplete', 'groupid', get_string('restrictedtogroup', 'mod_teammeeting'), $groups, [
+            'noselectionstring' => get_string('noneselected', 'mod_teammeeting')
+        ]);
+        $mform->addHelpButton('groupid', 'restrictedtogroup', 'mod_teammeeting');
+        $mform->setDefault('groupid', '');
+        $mform->disabledIf('groupmode', 'groupid', 'neq', '');
+        $mform->hideIf('groupingid', 'groupid', 'neq', '');
+
         // Student role.
         $mform->addElement('select', 'attendeesrole', get_string('attendeesrole', 'mod_teammeeting'), [
             helper::ROLE_ATTENDEE => get_string('attendeesroleattendee', 'mod_teammeeting'),
@@ -162,18 +174,6 @@ class mod_teammeeting_mod_form extends moodleform_mod {
             helper::CHAT_ENABLED => get_string('alwaysenabled', 'mod_teammeeting')
         ]);
         $mform->addHelpButton('allowchat', 'allowchat', 'mod_teammeeting');
-
-        // Group restriction.
-        $groups = ['' => get_string('noneselected', 'mod_teammeeting')] + array_map(function($group) {
-            return $group->name;
-        }, groups_get_all_groups($this->get_course()->id));
-        $mform->addElement('autocomplete', 'groupid', get_string('restrictedtogroup', 'mod_teammeeting'), $groups, [
-            'noselectionstring' => get_string('noneselected', 'mod_teammeeting')
-        ]);
-        $mform->addHelpButton('groupid', 'restrictedtogroup', 'mod_teammeeting');
-        $mform->setDefault('groupid', '');
-        $mform->disabledIf('groupmode', 'groupid', 'neq', '');
-        $mform->hideIf('groupingid', 'groupid', 'neq', '');
 
         $this->standard_coursemodule_elements();
 
