@@ -282,6 +282,13 @@ class mod_teammeeting_mod_form extends moodleform_mod {
             $data->groupmode = SEPARATEGROUPS;
             $data->groupingid = 0;
             $data->availabilityconditionsjson = $this->construct_availability_conditions_json($data);
+
+        } else if (!$data->groupid && !empty($this->current->id) && !empty($this->current->groupid)) {
+            // When we revert to no group, we remove what we previously did.
+            if ($data->groupmode == SEPARATEGROUPS) {
+                $data->groupmode = NOGROUPS;
+            }
+            $data->availabilityconditionsjson = $this->remove_availability_conditions_json($data, $this->current->groupid);
         }
 
         // Convert the teacher IDs field to a sequence.
@@ -377,6 +384,62 @@ class mod_teammeeting_mod_form extends moodleform_mod {
                     debugging('Restrict access structure too advanced to check or modify.', DEBUG_DEVELOPER);
                 }
             }
+        }
+
+        // Finally, validate the structure, or fallback on the original.
+        try {
+            new \core_availability\tree($structure);
+        } catch (Exception $e) {
+            debugging('Error in generated restrict access tree, reverting to original.', DEBUG_DEVELOPER);
+            return $origvalue;
+        }
+
+        return json_encode($structure);
+    }
+
+    /**
+     * Remove group availability condition.
+     *
+     * @param object $data The submitted data.
+     * @param int $groupid The previous group ID.
+     */
+    protected function remove_availability_conditions_json($data, $groupid) {
+        global $CFG;
+
+        $origvalue = !empty($data->availabilityconditionsjson) ? $data->availabilityconditionsjson : '';
+        if (empty($CFG->enableavailability)) {
+            return $origvalue;
+        } else if (empty($groupid)) {
+            return $origvalue;
+        } else if (empty($origvalue)) {
+            return $origvalue;
+        }
+
+        $groupconditionenabled = array_key_exists('group', \core\plugininfo\availability::get_enabled_plugins());
+        if (!$groupconditionenabled) {
+            return $origvalue;
+        }
+
+        // If we received a value, let's see.
+        $origstructure = json_decode($origvalue);
+        $tree = new \core_availability\tree($origstructure);
+
+        // Remove our structure.
+        if (!$tree->is_empty()) {
+            $structure = clone $origstructure;
+            $removeindex = null;
+            foreach ($structure->c as $idx => $condition) {
+                if (!empty($condition->type) && $condition->type === 'group' && $condition->id == $groupid) {
+                    $removeindex = $idx;
+                    break;
+                }
+            }
+            if ($removeindex !== null) {
+                unset($structure->c[$removeindex]);
+                unset($structure->showc[$removeindex]);
+                $structure->c = array_values($structure->c);
+                $structure->showc = array_values($structure->showc);
+            };
         }
 
         // Finally, validate the structure, or fallback on the original.
