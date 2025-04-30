@@ -1,6 +1,18 @@
 Changelog
 =========
 
+v1.7.2
+------
+
+- Attempt to undo group restriction shortcut setting when unset
+- Moved and clarify behaviour of group restriction shortcut setting
+
+v1.7.1
+------
+
+-  Fix view and access to meeting from the mobile app
+-  Mobile function failed due to missing externallib import
+
 v1.7.0
 ------
 
