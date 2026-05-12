@@ -26,6 +26,7 @@
 namespace mod_teammeeting;
 
 use context_course;
+use core\context\module;
 use core_external\external_api;
 use core_external\external_function_parameters;
 use core_external\external_single_structure;
@@ -59,6 +60,8 @@ class external extends external_api {
     /**
      * Is meeting ready?
      *
+     * @param int $teammeetingid The team meeting ID.
+     * @param int $groupid The group ID.
      * @return external_value
      */
     public static function is_meeting_ready($teammeetingid, $groupid) {
@@ -70,14 +73,15 @@ class external extends external_api {
         $groupid = $params['groupid'];
 
         $teammeeting = $DB->get_record('teammeeting', ['id' => $teammeetingid], '*', MUST_EXIST);
-        $context = context_course::instance($teammeeting->course);
+        $cm = get_coursemodule_from_instance('teammeeting', $teammeetingid, 0, false, MUST_EXIST);
+        $context = module::instance($cm->id);
+        static::validate_context($context);
 
         // Force the group ID, when set against the activity.
         if (!empty($teammeeting->groupid)) {
             $groupid = $teammeeting->groupid;
         }
 
-        static::validate_context($context);
         require_capability('mod/teammeeting:view', $context);
         if (!helper::can_access_group($teammeeting, $USER->id, $groupid)) {
             throw new moodle_exception('cannotaccessgroup', 'mod_teammeeting');
@@ -129,6 +133,8 @@ class external extends external_api {
     /**
      * Nominate the organiser of a meeting.
      *
+     * @param int $teammeetingid The team meeting ID.
+     * @param int $groupid The group ID.
      * @return external_value
      */
     public static function nominate_organiser($teammeetingid, $groupid) {
@@ -143,7 +149,8 @@ class external extends external_api {
         $manager->require_is_available();
 
         $teammeeting = $DB->get_record('teammeeting', ['id' => $teammeetingid], '*', MUST_EXIST);
-        $context = context_course::instance($teammeeting->course);
+        $cm = get_coursemodule_from_instance('teammeeting', $teammeetingid, 0, false, MUST_EXIST);
+        $context = module::instance($cm->id);
         static::validate_context($context);
 
         // Force the group ID, when set against the activity.
